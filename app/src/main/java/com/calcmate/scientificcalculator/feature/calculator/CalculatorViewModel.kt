@@ -1,6 +1,11 @@
 package com.calcmate.scientificcalculator.feature.calculator
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.calcmate.scientificcalculator.core.data.AppDatabase
+import com.calcmate.scientificcalculator.core.data.HistoryEntry
+import com.calcmate.scientificcalculator.core.data.HistoryRepository
 import com.calcmate.scientificcalculator.core.model.AngleUnit
 import com.calcmate.scientificcalculator.core.model.CalculatorAction
 import com.calcmate.scientificcalculator.core.model.CalculatorState
@@ -14,8 +19,22 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
-class CalculatorViewModel : ViewModel() {
+class CalculatorViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val historyRepository: HistoryRepository
+
+    init {
+        val dao = AppDatabase.getDatabase(application).historyDao()
+        historyRepository = HistoryRepository(dao)
+
+        viewModelScope.launch {
+            historyRepository.history.collect { entries ->
+                _state.update { it.copy(historyEntries = entries) }
+            }
+        }
+    }
 
     private val _state = MutableStateFlow(CalculatorState())
     val state: StateFlow<CalculatorState> = _state.asStateFlow()
@@ -38,6 +57,11 @@ class CalculatorViewModel : ViewModel() {
             is CalculatorAction.ToggleScientific -> onToggleScientific()
             is CalculatorAction.ToggleInverse -> onToggleInverse()
             is CalculatorAction.ToggleHyperbolic -> onToggleHyperbolic()
+            is CalculatorAction.ShowHistory -> onShowHistory()
+            is CalculatorAction.HideHistory -> onHideHistory()
+            is CalculatorAction.ReuseHistoryEntry -> onReuseHistoryEntry(action.entry)
+            is CalculatorAction.DeleteHistoryEntry -> onDeleteHistoryEntry(action.entry)
+            is CalculatorAction.ClearHistory -> onClearHistory()
         }
     }
 
@@ -177,6 +201,11 @@ class CalculatorViewModel : ViewModel() {
                     hasEvaluated = true,
                 )
             }
+            // Save to history
+            val formatName = current.displayFormat.name.lowercase()
+            viewModelScope.launch {
+                historyRepository.addEntry(current.expression, result, formatName)
+            }
         } catch (_: Exception) {
             _state.update {
                 it.copy(
@@ -286,6 +315,40 @@ class CalculatorViewModel : ViewModel() {
 
     private fun onToggleHyperbolic() {
         _state.update { it.copy(isHyperbolic = !it.isHyperbolic) }
+    }
+
+    // -- History actions --
+
+    private fun onShowHistory() {
+        _state.update { it.copy(showHistory = true) }
+    }
+
+    private fun onHideHistory() {
+        _state.update { it.copy(showHistory = false) }
+    }
+
+    private fun onReuseHistoryEntry(entry: HistoryEntry) {
+        _state.update {
+            it.copy(
+                expression = entry.expression,
+                result = entry.result,
+                error = null,
+                hasEvaluated = true,
+                showHistory = false,
+            )
+        }
+    }
+
+    private fun onDeleteHistoryEntry(entry: HistoryEntry) {
+        viewModelScope.launch {
+            historyRepository.deleteEntry(entry)
+        }
+    }
+
+    private fun onClearHistory() {
+        viewModelScope.launch {
+            historyRepository.clearAll()
+        }
     }
 
     private fun updateLivePreview() {

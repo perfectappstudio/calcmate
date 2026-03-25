@@ -8,6 +8,9 @@
     <application
         android:name=".CalcMateApp"
         android:allowBackup="true"
+        android:fullBackupContent="@xml/backup_rules"
+        android:dataExtractionRules="@xml/backup_rules"
+        android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher"
         android:label="CalcMate"
         android:supportsRtl="true"

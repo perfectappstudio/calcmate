@@ -1,5 +1,7 @@
 package com.calcmate.scientificcalculator.core.model
 
+import com.calcmate.scientificcalculator.core.data.HistoryEntry
+
 enum class DisplayFormat {
     DECIMAL,
     FRACTION,
@@ -16,4 +18,6 @@ data class CalculatorState(
     val isHyperbolic: Boolean = false,
     val error: String? = null,
     val hasEvaluated: Boolean = false,
+    val showHistory: Boolean = false,
+    val historyEntries: List<HistoryEntry> = emptyList(),
 )

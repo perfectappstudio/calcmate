@@ -1,9 +1,9 @@
 package com.calcmate.scientificcalculator.ui.components
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ShowChart
 import androidx.compose.material.icons.outlined.Calculate
 import androidx.compose.material.icons.outlined.Functions
-import androidx.compose.material.icons.outlined.ShowChart
 import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -20,7 +20,7 @@ data class NavDestination(
 
 val navDestinations = listOf(
     NavDestination("calculator", "Calculator", Icons.Outlined.Calculate),
-    NavDestination("graph", "Graph", Icons.Outlined.ShowChart),
+    NavDestination("graph", "Graph", Icons.AutoMirrored.Outlined.ShowChart),
     NavDestination("solver", "Solver", Icons.Outlined.Functions),
     NavDestination("converter", "Converter", Icons.Outlined.SwapHoriz),
 )
@@ -38,7 +38,7 @@ fun CalcMateNavigationBar(
                 icon = {
                     Icon(
                         imageVector = destination.icon,
-                        contentDescription = destination.label,
+                        contentDescription = "${destination.label} tab",
                     )
                 },
                 label = { Text(text = destination.label) },

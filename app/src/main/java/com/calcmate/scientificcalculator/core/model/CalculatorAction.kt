@@ -1,5 +1,7 @@
 package com.calcmate.scientificcalculator.core.model
 
+import com.calcmate.scientificcalculator.core.data.HistoryEntry
+
 sealed interface CalculatorAction {
     data class Digit(val digit: String) : CalculatorAction
     data object Decimal : CalculatorAction
@@ -17,4 +19,9 @@ sealed interface CalculatorAction {
     data object ToggleScientific : CalculatorAction
     data object ToggleInverse : CalculatorAction
     data object ToggleHyperbolic : CalculatorAction
+    data object ShowHistory : CalculatorAction
+    data object HideHistory : CalculatorAction
+    data class ReuseHistoryEntry(val entry: HistoryEntry) : CalculatorAction
+    data class DeleteHistoryEntry(val entry: HistoryEntry) : CalculatorAction
+    data object ClearHistory : CalculatorAction
 }
