@@ -15,7 +15,7 @@ class EvaluatorTest {
     private fun eval(input: String, angleUnit: AngleUnit = AngleUnit.RADIAN): Double {
         val tokens = Lexer(input).tokenize()
         val ast = Parser(tokens).parse()
-        return Evaluator(angleUnit).evaluate(ast)
+        return Evaluator(angleUnit).evaluate(ast).toDouble()
     }
 
     // ---------------------------------------------------------------
@@ -198,12 +198,17 @@ class EvaluatorTest {
     }
 
     // ---------------------------------------------------------------
-    // Mod
+    // Percent
     // ---------------------------------------------------------------
 
     @Test
-    fun `10 mod 3 equals 1`() {
-        assertEquals(1.0, eval("10%3"), DELTA)
+    fun `50 percent equals 0_5`() {
+        assertEquals(0.5, eval("50%"), DELTA)
+    }
+
+    @Test
+    fun `10 percent times 3 equals 0_3`() {
+        assertEquals(0.3, eval("10%3"), DELTA)
     }
 
     // ---------------------------------------------------------------

@@ -81,9 +81,12 @@ class Parser(private val tokens: List<Token>) {
 
     private fun parsePostfix(): ASTNode {
         var node = parsePrimary()
-        while (current().type == TokenType.FACTORIAL) {
-            advance()
-            node = ASTNode.FactorialNode(node)
+        while (current().type == TokenType.FACTORIAL || current().type == TokenType.PERCENT) {
+            when (advance().type) {
+                TokenType.FACTORIAL -> node = ASTNode.FactorialNode(node)
+                TokenType.PERCENT -> node = ASTNode.PercentNode(node)
+                else -> {}
+            }
         }
         return node
     }
@@ -110,6 +113,21 @@ class Parser(private val tokens: List<Token>) {
                 val node = parseExpression()
                 expect(TokenType.RPAREN)
                 node
+            }
+
+            TokenType.VARIABLE -> {
+                val name = advance().value[0]
+                ASTNode.VariableNode(name)
+            }
+
+            TokenType.ANS -> {
+                advance()
+                ASTNode.AnsNode
+            }
+
+            TokenType.RANDOM -> {
+                advance()
+                ASTNode.RandomNode
             }
 
             TokenType.LOG -> parseLogFunction()

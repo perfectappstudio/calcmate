@@ -14,6 +14,8 @@ enum class TokenType {
     PI, E,
     NPR, NCR,
     COMMA,
+    VARIABLE, ANS,
+    PERCENT, RANDOM,
     EOF
 }
 

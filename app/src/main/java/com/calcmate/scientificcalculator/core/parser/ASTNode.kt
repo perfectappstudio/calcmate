@@ -9,4 +9,8 @@ sealed class ASTNode {
     data class PermCombNode(val type: TokenType, val n: ASTNode, val r: ASTNode) : ASTNode()
     data class NegationNode(val operand: ASTNode) : ASTNode()
     data class FactorialNode(val operand: ASTNode) : ASTNode()
+    data class VariableNode(val name: Char) : ASTNode()
+    data object AnsNode : ASTNode()
+    data class PercentNode(val operand: ASTNode) : ASTNode()
+    data object RandomNode : ASTNode()
 }

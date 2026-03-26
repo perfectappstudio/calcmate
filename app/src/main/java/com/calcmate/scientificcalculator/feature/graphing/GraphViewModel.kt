@@ -135,7 +135,7 @@ class GraphViewModel : ViewModel() {
             val substituted = substituteX(expression, x)
             val tokens = Lexer(substituted).tokenize()
             val ast = Parser(tokens).parse()
-            Evaluator().evaluate(ast)
+            Evaluator().evaluate(ast).toDouble()
         } catch (_: Exception) {
             Double.NaN
         }

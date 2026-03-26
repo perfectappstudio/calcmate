@@ -43,8 +43,16 @@ class Lexer(private val input: String) {
 
         val start = pos
         while (pos < input.length && input[pos].isLetter()) pos++
-        val name = input.substring(start, pos)
 
+        // Handle "Ran#" — check for '#' after letters
+        val name = if (input.substring(start, pos) == "Ran" && pos < input.length && input[pos] == '#') {
+            pos++ // consume '#'
+            "Ran#"
+        } else {
+            input.substring(start, pos)
+        }
+
+        // Match function names first, then fall back to variables
         val token = when (name) {
             "sin" -> Token(TokenType.SIN, name)
             "cos" -> Token(TokenType.COS, name)
@@ -67,7 +75,16 @@ class Lexer(private val input: String) {
             "nCr" -> Token(TokenType.NCR, name)
             "pi" -> Token(TokenType.PI, name)
             "e" -> Token(TokenType.E, name)
-            else -> Token(TokenType.NUMBER, "0") // unknown identifier fallback
+            "Ans" -> Token(TokenType.ANS, name)
+            "Ran#" -> Token(TokenType.RANDOM, name)
+            else -> {
+                // Single uppercase letter A-F, M, X, Y -> VARIABLE
+                if (name.length == 1 && name[0] in "ABCDEFMXY") {
+                    Token(TokenType.VARIABLE, name)
+                } else {
+                    Token(TokenType.NUMBER, "0") // unknown identifier fallback
+                }
+            }
         }
         addWithImplicitMultiply(token)
     }
@@ -80,7 +97,7 @@ class Lexer(private val input: String) {
             '/', '÷' -> Token(TokenType.DIVIDE, "/")
             '^' -> Token(TokenType.POWER, "^")
             '!' -> Token(TokenType.FACTORIAL, "!")
-            '%' -> Token(TokenType.MOD, "%")
+            '%' -> Token(TokenType.PERCENT, "%")
             '(' -> {
                 pos++
                 addWithImplicitMultiply(Token(TokenType.LPAREN, "("))
@@ -102,7 +119,9 @@ class Lexer(private val input: String) {
             val last = tokens.last()
             val needsMultiply = when (last.type) {
                 TokenType.NUMBER, TokenType.PI, TokenType.E,
-                TokenType.RPAREN, TokenType.FACTORIAL -> {
+                TokenType.RPAREN, TokenType.FACTORIAL,
+                TokenType.VARIABLE, TokenType.ANS, TokenType.PERCENT,
+                TokenType.RANDOM -> {
                     token.type in setOf(
                         TokenType.NUMBER, TokenType.PI, TokenType.E,
                         TokenType.LPAREN,
@@ -112,7 +131,8 @@ class Lexer(private val input: String) {
                         TokenType.ASINH, TokenType.ACOSH, TokenType.ATANH,
                         TokenType.LN, TokenType.LOG,
                         TokenType.SQRT, TokenType.CBRT, TokenType.ABS,
-                        TokenType.NPR, TokenType.NCR
+                        TokenType.NPR, TokenType.NCR,
+                        TokenType.VARIABLE, TokenType.ANS, TokenType.RANDOM
                     )
                 }
                 else -> false

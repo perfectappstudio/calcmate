@@ -20,4 +20,5 @@ data class CalculatorState(
     val hasEvaluated: Boolean = false,
     val showHistory: Boolean = false,
     val historyEntries: List<HistoryEntry> = emptyList(),
+    val mIndicator: Boolean = false,
 )

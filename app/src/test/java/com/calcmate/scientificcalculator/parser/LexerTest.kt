@@ -111,9 +111,10 @@ class LexerTest {
     }
 
     @Test
-    fun `tokenize mod operator`() {
+    fun `tokenize percent operator`() {
         val types = tokenTypes("10%3")
-        assertEquals(listOf(TokenType.NUMBER, TokenType.MOD, TokenType.NUMBER, TokenType.EOF), types)
+        // 10% followed by 3 inserts implicit multiply: 10% * 3
+        assertEquals(listOf(TokenType.NUMBER, TokenType.PERCENT, TokenType.MULTIPLY, TokenType.NUMBER, TokenType.EOF), types)
     }
 
     @Test

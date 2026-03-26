@@ -10,6 +10,8 @@ import com.calcmate.scientificcalculator.core.model.AngleUnit
 import com.calcmate.scientificcalculator.core.model.CalculatorAction
 import com.calcmate.scientificcalculator.core.model.CalculatorState
 import com.calcmate.scientificcalculator.core.model.DisplayFormat
+import com.calcmate.scientificcalculator.core.model.MemoryManager
+import com.calcmate.scientificcalculator.core.parser.CalcResult
 import com.calcmate.scientificcalculator.core.parser.DisplayMode
 import com.calcmate.scientificcalculator.core.parser.Evaluator
 import com.calcmate.scientificcalculator.core.parser.Formatter
@@ -62,6 +64,11 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
             is CalculatorAction.ReuseHistoryEntry -> onReuseHistoryEntry(action.entry)
             is CalculatorAction.DeleteHistoryEntry -> onDeleteHistoryEntry(action.entry)
             is CalculatorAction.ClearHistory -> onClearHistory()
+            is CalculatorAction.StoreVariable -> onStoreVariable(action.name)
+            is CalculatorAction.RecallVariable -> onRecallVariable(action.name)
+            is CalculatorAction.AddToM -> onAddToM()
+            is CalculatorAction.SubtractFromM -> onSubtractFromM()
+            is CalculatorAction.RecallM -> onRecallM()
         }
     }
 
@@ -94,7 +101,7 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
     private fun onOperator(symbol: String) {
         val current = _state.value
         val base = if (current.hasEvaluated && current.result.isNotEmpty()) {
-            current.result
+            "Ans"
         } else {
             current.expression
         }
@@ -193,10 +200,11 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
         if (current.expression.isBlank()) return
 
         try {
-            val result = evaluateExpression(current.expression, current.angleUnit, current.displayFormat)
+            val (displayStr, calcResult) = evaluateExpressionFull(current.expression, current.angleUnit, current.displayFormat)
+            MemoryManager.ans = calcResult
             _state.update {
                 it.copy(
-                    result = result,
+                    result = displayStr,
                     error = null,
                     hasEvaluated = true,
                 )
@@ -204,7 +212,7 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
             // Save to history
             val formatName = current.displayFormat.name.lowercase()
             viewModelScope.launch {
-                historyRepository.addEntry(current.expression, result, formatName)
+                historyRepository.addEntry(current.expression, displayStr, formatName)
             }
         } catch (_: Exception) {
             _state.update {
@@ -299,7 +307,8 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
     private fun onToggleAngleUnit() {
         val nextUnit = when (_state.value.angleUnit) {
             AngleUnit.DEGREE -> AngleUnit.RADIAN
-            AngleUnit.RADIAN -> AngleUnit.DEGREE
+            AngleUnit.RADIAN -> AngleUnit.GRADIAN
+            AngleUnit.GRADIAN -> AngleUnit.DEGREE
         }
         _state.update { it.copy(angleUnit = nextUnit) }
         updateLivePreview()
@@ -365,6 +374,87 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
+    private fun onStoreVariable(name: Char) {
+        val current = _state.value
+        if (!current.hasEvaluated || current.result.isEmpty()) return
+        try {
+            val (_, calcResult) = evaluateExpressionFull(current.expression, current.angleUnit, current.displayFormat)
+            MemoryManager.storeVariable(name, calcResult)
+        } catch (_: Exception) {
+            // ignore
+        }
+    }
+
+    private fun onRecallVariable(name: Char) {
+        val recalled = MemoryManager.recallVariable(name)
+        val current = _state.value
+        val insertText = if (name == 'M' || name in 'A'..'F' || name == 'X' || name == 'Y') {
+            name.toString()
+        } else {
+            recalled.toDouble().toString()
+        }
+        val newExpression = if (current.hasEvaluated) insertText else current.expression + insertText
+        _state.update {
+            it.copy(
+                expression = newExpression,
+                error = null,
+                hasEvaluated = false,
+            )
+        }
+        updateLivePreview()
+    }
+
+    private fun onAddToM() {
+        val current = _state.value
+        if (!current.hasEvaluated || current.result.isEmpty()) return
+        try {
+            val (_, calcResult) = evaluateExpressionFull(current.expression, current.angleUnit, current.displayFormat)
+            MemoryManager.addToM(calcResult.toDouble())
+            _state.update { it.copy(mIndicator = MemoryManager.independentM != 0.0) }
+        } catch (_: Exception) {
+            // ignore
+        }
+    }
+
+    private fun onSubtractFromM() {
+        val current = _state.value
+        if (!current.hasEvaluated || current.result.isEmpty()) return
+        try {
+            val (_, calcResult) = evaluateExpressionFull(current.expression, current.angleUnit, current.displayFormat)
+            MemoryManager.subtractFromM(calcResult.toDouble())
+            _state.update { it.copy(mIndicator = MemoryManager.independentM != 0.0) }
+        } catch (_: Exception) {
+            // ignore
+        }
+    }
+
+    private fun onRecallM() {
+        onRecallVariable('M')
+    }
+
+    private fun evaluateExpressionFull(
+        expression: String,
+        angleUnit: AngleUnit,
+        displayFormat: DisplayFormat,
+    ): Pair<String, CalcResult> {
+        val normalized = expression
+            .replace("\u00D7", "*")
+            .replace("\u00F7", "/")
+            .replace("\u2212", "-")
+            .replace("\u03C0", "pi")
+
+        val tokens = Lexer(normalized).tokenize()
+        val ast = Parser(tokens).parse()
+        val result = Evaluator(angleUnit).evaluate(ast)
+
+        val displayMode = when (displayFormat) {
+            DisplayFormat.DECIMAL -> DisplayMode.DECIMAL
+            DisplayFormat.FRACTION -> DisplayMode.FRACTION
+            DisplayFormat.SCIENTIFIC -> DisplayMode.SCIENTIFIC
+        }
+        return Formatter(displayMode).format(result) to result
+    }
+
     private fun evaluateExpression(
         expression: String,
         angleUnit: AngleUnit,
@@ -379,13 +469,13 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
 
         val tokens = Lexer(normalized).tokenize()
         val ast = Parser(tokens).parse()
-        val value = Evaluator(angleUnit).evaluate(ast)
+        val result = Evaluator(angleUnit).evaluate(ast)
 
         val displayMode = when (displayFormat) {
             DisplayFormat.DECIMAL -> DisplayMode.DECIMAL
             DisplayFormat.FRACTION -> DisplayMode.FRACTION
             DisplayFormat.SCIENTIFIC -> DisplayMode.SCIENTIFIC
         }
-        return Formatter(displayMode).format(value)
+        return Formatter(displayMode).format(result)
     }
 }

@@ -24,4 +24,9 @@ sealed interface CalculatorAction {
     data class ReuseHistoryEntry(val entry: HistoryEntry) : CalculatorAction
     data class DeleteHistoryEntry(val entry: HistoryEntry) : CalculatorAction
     data object ClearHistory : CalculatorAction
+    data class StoreVariable(val name: Char) : CalculatorAction
+    data class RecallVariable(val name: Char) : CalculatorAction
+    data object AddToM : CalculatorAction
+    data object SubtractFromM : CalculatorAction
+    data object RecallM : CalculatorAction
 }

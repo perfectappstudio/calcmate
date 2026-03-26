@@ -15,6 +15,8 @@ enum class DisplayMode {
 
 class Formatter(private val mode: DisplayMode = DisplayMode.DECIMAL) {
 
+    fun format(result: CalcResult): String = result.toDisplayString(this)
+
     fun format(value: Double): String {
         if (value.isNaN()) return "Error"
         if (value == Double.POSITIVE_INFINITY) return "∞"
