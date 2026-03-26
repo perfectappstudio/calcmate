@@ -2,16 +2,10 @@ package com.calcmate.scientificcalculator.core.model
 
 import com.calcmate.scientificcalculator.core.data.HistoryEntry
 
-enum class DisplayFormat {
-    DECIMAL,
-    FRACTION,
-    SCIENTIFIC
-}
-
 data class CalculatorState(
     val expression: String = "",
     val result: String = "",
-    val displayFormat: DisplayFormat = DisplayFormat.DECIMAL,
+    val displaySettings: DisplaySettings = DisplaySettings(),
     val angleUnit: AngleUnit = AngleUnit.DEGREE,
     val isScientificExpanded: Boolean = true,
     val isInverse: Boolean = false,

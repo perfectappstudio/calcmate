@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
@@ -18,6 +19,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -26,6 +28,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import com.calcmate.scientificcalculator.core.model.DisplayMode
+import com.calcmate.scientificcalculator.core.model.DisplaySettings
+import com.calcmate.scientificcalculator.core.model.FractionFormat
 
 // ──────────────────────────────────────────────────
 // Option enums
@@ -35,12 +40,6 @@ enum class ThemeOption(val label: String) {
     System("System"),
     Light("Light"),
     Dark("Dark"),
-}
-
-enum class DisplayFormat(val label: String) {
-    Decimal("Decimal"),
-    Fraction("Fraction"),
-    Scientific("Scientific"),
 }
 
 enum class AngleUnit(val label: String) {
@@ -56,8 +55,8 @@ enum class AngleUnit(val label: String) {
 fun SettingsDialog(
     currentTheme: ThemeOption,
     onThemeChange: (ThemeOption) -> Unit,
-    currentDisplayFormat: DisplayFormat,
-    onDisplayFormatChange: (DisplayFormat) -> Unit,
+    currentDisplaySettings: DisplaySettings,
+    onDisplaySettingsChange: (DisplaySettings) -> Unit,
     currentAngleUnit: AngleUnit,
     onAngleUnitChange: (AngleUnit) -> Unit,
     hapticFeedbackEnabled: Boolean,
@@ -95,13 +94,63 @@ fun SettingsDialog(
 
                 SectionDivider()
 
-                // ── Display format ──
-                SectionHeader("Display Format")
+                // ── Display Mode ──
+                SectionHeader("Display Mode")
+                DisplayModeSection(
+                    settings = currentDisplaySettings,
+                    onSettingsChange = onDisplaySettingsChange,
+                )
+
+                SectionDivider()
+
+                // ── Engineering ──
+                SectionHeader("Engineering")
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            onDisplaySettingsChange(
+                                currentDisplaySettings.copy(
+                                    engineeringOn = !currentDisplaySettings.engineeringOn,
+                                ),
+                            )
+                        }
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = if (currentDisplaySettings.engineeringOn) "Eng ON" else "Eng OFF",
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                    Switch(
+                        checked = currentDisplaySettings.engineeringOn,
+                        onCheckedChange = { enabled ->
+                            onDisplaySettingsChange(
+                                currentDisplaySettings.copy(engineeringOn = enabled),
+                            )
+                        },
+                    )
+                }
+
+                SectionDivider()
+
+                // ── Fraction Format ──
+                SectionHeader("Fraction Format")
                 RadioGroup(
-                    options = DisplayFormat.entries,
-                    selected = currentDisplayFormat,
-                    labelOf = { it.label },
-                    onSelected = onDisplayFormatChange,
+                    options = FractionFormat.entries,
+                    selected = currentDisplaySettings.fractionFormat,
+                    labelOf = { format ->
+                        when (format) {
+                            FractionFormat.MIXED -> "Mixed  ab/c"
+                            FractionFormat.IMPROPER -> "Improper  d/c"
+                        }
+                    },
+                    onSelected = { format ->
+                        onDisplaySettingsChange(
+                            currentDisplaySettings.copy(fractionFormat = format),
+                        )
+                    },
                 )
 
                 SectionDivider()
@@ -172,6 +221,80 @@ fun SettingsDialog(
             }
         },
     )
+}
+
+// ──────────────────────────────────────────────────
+// Display Mode section with digit picker
+// ──────────────────────────────────────────────────
+
+@Composable
+private fun DisplayModeSection(
+    settings: DisplaySettings,
+    onSettingsChange: (DisplaySettings) -> Unit,
+) {
+    Column(Modifier.selectableGroup()) {
+        DisplayMode.entries.forEach { mode ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .selectable(
+                        selected = mode == settings.mode,
+                        onClick = {
+                            val newDigits = when (mode) {
+                                DisplayMode.FIX -> settings.digits.coerceIn(0, 9)
+                                DisplayMode.SCI -> settings.digits.coerceIn(1, 10)
+                                else -> settings.digits
+                            }
+                            onSettingsChange(settings.copy(mode = mode, digits = newDigits))
+                        },
+                        role = Role.RadioButton,
+                    )
+                    .padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                RadioButton(
+                    selected = mode == settings.mode,
+                    onClick = null,
+                )
+                Text(
+                    text = when (mode) {
+                        DisplayMode.FIX -> "Fix"
+                        DisplayMode.SCI -> "Sci"
+                        DisplayMode.NORM_1 -> "Norm 1"
+                        DisplayMode.NORM_2 -> "Norm 2"
+                    },
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(start = 8.dp),
+                )
+            }
+        }
+    }
+
+    // Digit picker for Fix and Sci modes
+    if (settings.mode == DisplayMode.FIX || settings.mode == DisplayMode.SCI) {
+        val range = if (settings.mode == DisplayMode.FIX) 0..9 else 1..10
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 40.dp, top = 4.dp, bottom = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "Digits: ${settings.digits}",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Slider(
+                value = settings.digits.toFloat(),
+                onValueChange = { value ->
+                    onSettingsChange(settings.copy(digits = value.toInt()))
+                },
+                valueRange = range.first.toFloat()..range.last.toFloat(),
+                steps = range.last - range.first - 1,
+                modifier = Modifier.weight(1f),
+            )
+        }
+    }
 }
 
 // ──────────────────────────────────────────────────

@@ -9,10 +9,9 @@ import com.calcmate.scientificcalculator.core.data.HistoryRepository
 import com.calcmate.scientificcalculator.core.model.AngleUnit
 import com.calcmate.scientificcalculator.core.model.CalculatorAction
 import com.calcmate.scientificcalculator.core.model.CalculatorState
-import com.calcmate.scientificcalculator.core.model.DisplayFormat
+import com.calcmate.scientificcalculator.core.model.DisplaySettings
 import com.calcmate.scientificcalculator.core.model.MemoryManager
 import com.calcmate.scientificcalculator.core.parser.CalcResult
-import com.calcmate.scientificcalculator.core.parser.DisplayMode
 import com.calcmate.scientificcalculator.core.parser.Evaluator
 import com.calcmate.scientificcalculator.core.parser.Formatter
 import com.calcmate.scientificcalculator.core.parser.Lexer
@@ -200,7 +199,7 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
         if (current.expression.isBlank()) return
 
         try {
-            val (displayStr, calcResult) = evaluateExpressionFull(current.expression, current.angleUnit, current.displayFormat)
+            val (displayStr, calcResult) = evaluateExpressionFull(current.expression, current.angleUnit, current.displaySettings)
             MemoryManager.ans = calcResult
             _state.update {
                 it.copy(
@@ -210,7 +209,7 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
                 )
             }
             // Save to history
-            val formatName = current.displayFormat.name.lowercase()
+            val formatName = current.displaySettings.mode.name.lowercase()
             viewModelScope.launch {
                 historyRepository.addEntry(current.expression, displayStr, formatName)
             }
@@ -283,19 +282,20 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     private fun onToggleDisplayFormat() {
-        val nextFormat = when (_state.value.displayFormat) {
-            DisplayFormat.DECIMAL -> DisplayFormat.FRACTION
-            DisplayFormat.FRACTION -> DisplayFormat.SCIENTIFIC
-            DisplayFormat.SCIENTIFIC -> DisplayFormat.DECIMAL
+        val currentMode = _state.value.displaySettings.mode
+        val nextMode = com.calcmate.scientificcalculator.core.model.DisplayMode.entries.let { modes ->
+            val idx = modes.indexOf(currentMode)
+            modes[(idx + 1) % modes.size]
         }
-        _state.update { it.copy(displayFormat = nextFormat) }
+        val nextSettings = _state.value.displaySettings.copy(mode = nextMode)
+        _state.update { it.copy(displaySettings = nextSettings) }
         // Re-evaluate if there's a result to show in the new format
         if (_state.value.hasEvaluated && _state.value.expression.isNotBlank()) {
             try {
                 val result = evaluateExpression(
                     _state.value.expression,
                     _state.value.angleUnit,
-                    nextFormat,
+                    nextSettings,
                 )
                 _state.update { it.copy(result = result) }
             } catch (_: Exception) {
@@ -367,7 +367,7 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
             return
         }
         try {
-            val result = evaluateExpression(current.expression, current.angleUnit, current.displayFormat)
+            val result = evaluateExpression(current.expression, current.angleUnit, current.displaySettings)
             _state.update { it.copy(result = result, error = null) }
         } catch (_: Exception) {
             // Silently ignore preview errors -- expression is likely incomplete
@@ -378,7 +378,7 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
         val current = _state.value
         if (!current.hasEvaluated || current.result.isEmpty()) return
         try {
-            val (_, calcResult) = evaluateExpressionFull(current.expression, current.angleUnit, current.displayFormat)
+            val (_, calcResult) = evaluateExpressionFull(current.expression, current.angleUnit, current.displaySettings)
             MemoryManager.storeVariable(name, calcResult)
         } catch (_: Exception) {
             // ignore
@@ -408,7 +408,7 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
         val current = _state.value
         if (!current.hasEvaluated || current.result.isEmpty()) return
         try {
-            val (_, calcResult) = evaluateExpressionFull(current.expression, current.angleUnit, current.displayFormat)
+            val (_, calcResult) = evaluateExpressionFull(current.expression, current.angleUnit, current.displaySettings)
             MemoryManager.addToM(calcResult.toDouble())
             _state.update { it.copy(mIndicator = MemoryManager.independentM != 0.0) }
         } catch (_: Exception) {
@@ -420,7 +420,7 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
         val current = _state.value
         if (!current.hasEvaluated || current.result.isEmpty()) return
         try {
-            val (_, calcResult) = evaluateExpressionFull(current.expression, current.angleUnit, current.displayFormat)
+            val (_, calcResult) = evaluateExpressionFull(current.expression, current.angleUnit, current.displaySettings)
             MemoryManager.subtractFromM(calcResult.toDouble())
             _state.update { it.copy(mIndicator = MemoryManager.independentM != 0.0) }
         } catch (_: Exception) {
@@ -435,7 +435,7 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
     private fun evaluateExpressionFull(
         expression: String,
         angleUnit: AngleUnit,
-        displayFormat: DisplayFormat,
+        displaySettings: DisplaySettings,
     ): Pair<String, CalcResult> {
         val normalized = expression
             .replace("\u00D7", "*")
@@ -447,18 +447,15 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
         val ast = Parser(tokens).parse()
         val result = Evaluator(angleUnit).evaluate(ast)
 
-        val displayMode = when (displayFormat) {
-            DisplayFormat.DECIMAL -> DisplayMode.DECIMAL
-            DisplayFormat.FRACTION -> DisplayMode.FRACTION
-            DisplayFormat.SCIENTIFIC -> DisplayMode.SCIENTIFIC
-        }
-        return Formatter(displayMode).format(result) to result
+        val formatter = Formatter()
+        val displayStr = formatter.formatWithSettings(result.toDouble(), displaySettings)
+        return displayStr to result
     }
 
     private fun evaluateExpression(
         expression: String,
         angleUnit: AngleUnit,
-        displayFormat: DisplayFormat,
+        displaySettings: DisplaySettings,
     ): String {
         // Normalize display operators to parser-compatible symbols
         val normalized = expression
@@ -471,11 +468,7 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
         val ast = Parser(tokens).parse()
         val result = Evaluator(angleUnit).evaluate(ast)
 
-        val displayMode = when (displayFormat) {
-            DisplayFormat.DECIMAL -> DisplayMode.DECIMAL
-            DisplayFormat.FRACTION -> DisplayMode.FRACTION
-            DisplayFormat.SCIENTIFIC -> DisplayMode.SCIENTIFIC
-        }
-        return Formatter(displayMode).format(result)
+        val formatter = Formatter()
+        return formatter.formatWithSettings(result.toDouble(), displaySettings)
     }
 }

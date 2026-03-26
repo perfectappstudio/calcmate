@@ -1,6 +1,10 @@
 package com.calcmate.scientificcalculator.core.math
 
 import kotlin.math.abs
+import kotlin.math.acos
+import kotlin.math.cbrt
+import kotlin.math.cos
+import kotlin.math.pow
 import kotlin.math.sqrt
 
 // --- Linear ---
@@ -36,6 +40,27 @@ sealed class QuadraticResult {
 
     /** Degenerates to a linear equation when a == 0. */
     data class DegenerateLinear(val linearResult: LinearResult) : QuadraticResult()
+}
+
+// --- Cubic ---
+
+sealed class CubicResult {
+    data class ThreeRealRoots(
+        val x1: Double,
+        val x2: Double,
+        val x3: Double,
+        val steps: List<String>,
+    ) : CubicResult()
+
+    data class OneRealTwoComplex(
+        val x1: Double,
+        val realPart: Double,
+        val imagPart: Double,
+        val steps: List<String>,
+    ) : CubicResult()
+
+    /** Degenerates to a quadratic equation when a == 0. */
+    data class DegenerateQuadratic(val quadraticResult: QuadraticResult) : CubicResult()
 }
 
 // --- System 2x2 ---
@@ -106,6 +131,92 @@ object EquationSolver {
                 val imaginaryPart = sqrt(-discriminant) / (2.0 * a)
                 steps += "x = ${fmt(realPart)} \u00B1 ${fmt(abs(imaginaryPart))}i"
                 QuadraticResult.ComplexRoots(realPart, abs(imaginaryPart), discriminant, steps)
+            }
+        }
+    }
+
+    /**
+     * Solve cubic equation: ax^3 + bx^2 + cx + d = 0
+     * Uses Cardano's formula via depressed cubic substitution.
+     */
+    fun solveCubic(a: Double, b: Double, c: Double, d: Double): CubicResult {
+        // Degenerate case: a == 0 => quadratic
+        if (abs(a) < EPS) {
+            return CubicResult.DegenerateQuadratic(solveQuadratic(b, c, d))
+        }
+
+        val steps = mutableListOf<String>()
+        steps += "Equation: ${fmt(a)}x\u00B3 + ${fmt(b)}x\u00B2 + ${fmt(c)}x + ${fmt(d)} = 0"
+
+        // Normalize to x^3 + px^2 + qx + r = 0
+        val p = b / a
+        val q = c / a
+        val r = d / a
+        steps += "Divide by a: x\u00B3 + ${fmt(p)}x\u00B2 + ${fmt(q)}x + ${fmt(r)} = 0"
+
+        // Depressed cubic via substitution x = t - p/3
+        // t^3 + pt + qDep = 0 where:
+        val pDep = q - p * p / 3.0
+        val qDep = r - p * q / 3.0 + 2.0 * p * p * p / 27.0
+        steps += "Depressed cubic (x = t - ${fmt(p / 3.0)}):"
+        steps += "  t\u00B3 + ${fmt(pDep)}t + ${fmt(qDep)} = 0"
+
+        // Discriminant: D = (qDep/2)^2 + (pDep/3)^3
+        val disc = (qDep / 2.0).pow(2) + (pDep / 3.0).pow(3)
+        steps += "\u0394 = (q/2)\u00B2 + (p/3)\u00B3 = ${fmt(disc)}"
+
+        val shift = -p / 3.0
+
+        return when {
+            disc > EPS -> {
+                // One real root, two complex conjugates
+                steps += "\u0394 > 0: one real root, two complex conjugate roots"
+                val sqrtDisc = sqrt(disc)
+                val u = cbrt(-qDep / 2.0 + sqrtDisc)
+                val v = cbrt(-qDep / 2.0 - sqrtDisc)
+                val x1 = u + v + shift
+                steps += "u = \u00B3\u221A(${fmt(-qDep / 2.0 + sqrtDisc)}) = ${fmt(u)}"
+                steps += "v = \u00B3\u221A(${fmt(-qDep / 2.0 - sqrtDisc)}) = ${fmt(v)}"
+                steps += "x\u2081 = u + v - p/3 = ${fmt(x1)}"
+
+                val realPart = -(u + v) / 2.0 + shift
+                val imagPart = abs((u - v) * sqrt(3.0) / 2.0)
+                steps += "x\u2082,\u2083 = ${fmt(realPart)} \u00B1 ${fmt(imagPart)}i"
+
+                CubicResult.OneRealTwoComplex(x1, realPart, imagPart, steps)
+            }
+            abs(disc) <= EPS -> {
+                // All roots real, at least two equal
+                steps += "\u0394 = 0: repeated roots"
+                if (abs(pDep) < EPS && abs(qDep) < EPS) {
+                    // Triple root
+                    val x1 = shift
+                    steps += "Triple root: x = ${fmt(x1)}"
+                    CubicResult.ThreeRealRoots(x1, x1, x1, steps)
+                } else {
+                    val u = cbrt(-qDep / 2.0)
+                    val x1 = 2.0 * u + shift
+                    val x2 = -u + shift
+                    steps += "x\u2081 = ${fmt(x1)}"
+                    steps += "x\u2082 = x\u2083 = ${fmt(x2)}"
+                    val roots = listOf(x1, x2, x2).sortedDescending()
+                    CubicResult.ThreeRealRoots(roots[0], roots[1], roots[2], steps)
+                }
+            }
+            else -> {
+                // Three distinct real roots — use trigonometric method
+                steps += "\u0394 < 0: three distinct real roots"
+                val rTrig = sqrt(-(pDep / 3.0).pow(3))
+                val theta = acos(-qDep / (2.0 * rTrig))
+                val m = 2.0 * cbrt(rTrig)
+                val x1 = m * cos(theta / 3.0) + shift
+                val x2 = m * cos((theta + 2.0 * Math.PI) / 3.0) + shift
+                val x3 = m * cos((theta + 4.0 * Math.PI) / 3.0) + shift
+                val roots = listOf(x1, x2, x3).sortedDescending()
+                steps += "x\u2081 = ${fmt(roots[0])}"
+                steps += "x\u2082 = ${fmt(roots[1])}"
+                steps += "x\u2083 = ${fmt(roots[2])}"
+                CubicResult.ThreeRealRoots(roots[0], roots[1], roots[2], steps)
             }
         }
     }

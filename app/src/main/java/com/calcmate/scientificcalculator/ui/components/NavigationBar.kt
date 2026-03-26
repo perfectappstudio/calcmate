@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ShowChart
 import androidx.compose.material.icons.outlined.Calculate
 import androidx.compose.material.icons.outlined.Functions
+import androidx.compose.material.icons.outlined.StackedBarChart
 import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -23,6 +24,7 @@ val navDestinations = listOf(
     NavDestination("graph", "Graph", Icons.AutoMirrored.Outlined.ShowChart),
     NavDestination("solver", "Solver", Icons.Outlined.Functions),
     NavDestination("converter", "Converter", Icons.Outlined.SwapHoriz),
+    NavDestination("statistics", "Stats", Icons.Outlined.StackedBarChart),
 )
 
 @Composable

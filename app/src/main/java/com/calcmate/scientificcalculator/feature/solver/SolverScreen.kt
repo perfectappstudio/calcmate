@@ -41,11 +41,13 @@ fun SolverScreen(
             modifier = Modifier.padding(bottom = 16.dp),
         )
 
-        // --- Segmented button row: Linear | Quadratic | System ---
+        // --- Segmented button row: Linear | Quadratic | Cubic | System | Solve ---
         val options = listOf(
             SolverType.LINEAR to "Linear",
             SolverType.QUADRATIC to "Quadratic",
+            SolverType.CUBIC to "Cubic",
             SolverType.SYSTEM_2X2 to "System",
+            SolverType.NEWTON to "Solve",
         )
 
         SingleChoiceSegmentedButtonRow(
@@ -84,11 +86,23 @@ fun SolverScreen(
                 onSolve = viewModel::onSolve,
                 onToggleSteps = viewModel::onToggleSteps,
             )
+            SolverType.CUBIC -> CubicSolverPanel(
+                state = state,
+                onCoefficientChange = viewModel::onCubicCoefficientChange,
+                onSolve = viewModel::onSolve,
+                onToggleSteps = viewModel::onToggleSteps,
+            )
             SolverType.SYSTEM_2X2, SolverType.SYSTEM_3X3 -> SystemSolverPanel(
                 state = state,
                 onTypeChange = viewModel::onTypeChange,
                 on2x2CoefficientChange = viewModel::onSystem2x2CoefficientChange,
                 on3x3CoefficientChange = viewModel::onSystem3x3CoefficientChange,
+                onSolve = viewModel::onSolve,
+            )
+            SolverType.NEWTON -> NewtonSolverPanel(
+                state = state,
+                onExpressionChange = viewModel::onNewtonExpressionChange,
+                onGuessChange = viewModel::onNewtonGuessChange,
                 onSolve = viewModel::onSolve,
             )
         }

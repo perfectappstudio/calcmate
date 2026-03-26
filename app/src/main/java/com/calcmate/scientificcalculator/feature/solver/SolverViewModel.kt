@@ -2,6 +2,7 @@ package com.calcmate.scientificcalculator.feature.solver
 
 import androidx.lifecycle.ViewModel
 import com.calcmate.scientificcalculator.core.math.EquationSolver
+import com.calcmate.scientificcalculator.core.math.NewtonSolver
 import com.calcmate.scientificcalculator.core.model.SolverResult
 import com.calcmate.scientificcalculator.core.model.SolverState
 import com.calcmate.scientificcalculator.core.model.SolverType
@@ -65,6 +66,26 @@ class SolverViewModel : ViewModel() {
         }
     }
 
+    fun onCubicCoefficientChange(index: Int, value: String) {
+        _state.update {
+            when (index) {
+                0 -> it.copy(cubA = value, result = null)
+                1 -> it.copy(cubB = value, result = null)
+                2 -> it.copy(cubC = value, result = null)
+                3 -> it.copy(cubD = value, result = null)
+                else -> it
+            }
+        }
+    }
+
+    fun onNewtonExpressionChange(value: String) {
+        _state.update { it.copy(newtonExpression = value, result = null) }
+    }
+
+    fun onNewtonGuessChange(value: String) {
+        _state.update { it.copy(newtonGuess = value, result = null) }
+    }
+
     // --- Solve ---
 
     fun onSolve() {
@@ -72,8 +93,10 @@ class SolverViewModel : ViewModel() {
         val result = when (current.solverType) {
             SolverType.LINEAR -> solveLinear(current)
             SolverType.QUADRATIC -> solveQuadratic(current)
+            SolverType.CUBIC -> solveCubic(current)
             SolverType.SYSTEM_2X2 -> solveSystem2x2(current)
             SolverType.SYSTEM_3X3 -> solveSystem3x3(current)
+            SolverType.NEWTON -> solveNewton(current)
         }
         _state.update { it.copy(result = result) }
     }
@@ -122,5 +145,27 @@ class SolverViewModel : ViewModel() {
             }
         }
         return SolverResult.System3x3(EquationSolver.solveSystem3x3(matrix))
+    }
+
+    private fun solveCubic(s: SolverState): SolverResult {
+        val a = s.cubA.toDoubleOrNull()
+            ?: return SolverResult.Error("Invalid coefficient a")
+        val b = s.cubB.toDoubleOrNull()
+            ?: return SolverResult.Error("Invalid coefficient b")
+        val c = s.cubC.toDoubleOrNull()
+            ?: return SolverResult.Error("Invalid coefficient c")
+        val d = s.cubD.toDoubleOrNull()
+            ?: return SolverResult.Error("Invalid coefficient d")
+        return SolverResult.Cubic(EquationSolver.solveCubic(a, b, c, d))
+    }
+
+    private fun solveNewton(s: SolverState): SolverResult {
+        val expression = s.newtonExpression.trim()
+        if (expression.isEmpty()) {
+            return SolverResult.Error("Enter an expression using X as the variable")
+        }
+        val guess = s.newtonGuess.toDoubleOrNull()
+            ?: return SolverResult.Error("Invalid initial guess")
+        return SolverResult.Newton(NewtonSolver.solve(expression, guess))
     }
 }

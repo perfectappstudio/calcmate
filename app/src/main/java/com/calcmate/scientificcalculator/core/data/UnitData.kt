@@ -11,6 +11,7 @@ enum class UnitCategory(val displayName: String) {
     DATA_STORAGE("Data"),
     PRESSURE("Pressure"),
     ENERGY("Energy"),
+    POWER("Power"),
 }
 
 data class UnitDef(
@@ -38,6 +39,7 @@ object UnitData {
             UnitDef("Micrometer", "\u00B5m", { it / 1_000_000.0 }, { it * 1_000_000.0 }),
             UnitDef("Nanometer", "nm", { it / 1_000_000_000.0 }, { it * 1_000_000_000.0 }),
             UnitDef("Light-year", "ly", { it * 9.4607e15 }, { it / 9.4607e15 }),
+            UnitDef("Parsec", "pc", { it * 3.0856775814913673e13 }, { it / 3.0856775814913673e13 }),
         ),
 
         // ── WEIGHT (base: kilogram) ─────────────────────────────────────
@@ -158,6 +160,7 @@ object UnitData {
             UnitDef("mmHg", "mmHg", { it * 133.322387415 }, { it / 133.322387415 }),
             UnitDef("inHg", "inHg", { it * 3_386.389 }, { it / 3_386.389 }),
             UnitDef("Torr", "Torr", { it * 133.322368421 }, { it / 133.322368421 }),
+            UnitDef("kgf/cm\u00B2", "kgf/cm\u00B2", { it * 98_066.5 }, { it / 98_066.5 }),
         ),
 
         // ── ENERGY (base: joule) ────────────────────────────────────────
@@ -172,6 +175,15 @@ object UnitData {
             UnitDef("BTU", "BTU", { it * 1_055.06 }, { it / 1_055.06 }),
             UnitDef("Electronvolt", "eV", { it * 1.602176634e-19 }, { it / 1.602176634e-19 }),
             UnitDef("Foot-pound", "ft\u00B7lbf", { it * 1.3558179483 }, { it / 1.3558179483 }),
+            UnitDef("kgf\u00B7m", "kgf\u00B7m", { it * 9.80665 }, { it / 9.80665 }),
+        ),
+
+        // ── POWER (base: watt) ────────────────────────────────────────────
+        UnitCategory.POWER to listOf(
+            UnitDef("Watt", "W", { it }, { it }),
+            UnitDef("Kilowatt", "kW", { it * 1_000.0 }, { it / 1_000.0 }),
+            UnitDef("Megawatt", "MW", { it * 1_000_000.0 }, { it / 1_000_000.0 }),
+            UnitDef("Horsepower", "hp", { it * 745.69987158227022 }, { it / 745.69987158227022 }),
         ),
     )
 

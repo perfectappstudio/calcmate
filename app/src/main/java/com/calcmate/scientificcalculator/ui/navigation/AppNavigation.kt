@@ -21,6 +21,7 @@ import com.calcmate.scientificcalculator.feature.calculator.CalculatorScreen
 import com.calcmate.scientificcalculator.feature.converter.ConverterScreen
 import com.calcmate.scientificcalculator.feature.graphing.GraphScreen
 import com.calcmate.scientificcalculator.feature.solver.SolverScreen
+import com.calcmate.scientificcalculator.feature.statistics.StatisticsScreen
 import com.calcmate.scientificcalculator.ads.BannerAdComposable
 import com.calcmate.scientificcalculator.ui.components.CalcMateNavigationBar
 import com.calcmate.scientificcalculator.ui.components.navDestinations
@@ -71,6 +72,7 @@ fun AppNavigation() {
                     "graph" -> GraphScreen()
                     "solver" -> SolverScreen()
                     "converter" -> ConverterScreen()
+                    "statistics" -> StatisticsScreen()
                 }
             }
         }
