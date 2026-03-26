@@ -45,6 +45,17 @@ android {
     }
 }
 
+// Force-upgrade Espresso pulled transitively by compose-ui-test-junit4.
+// Espresso <= 3.6.1 crashes on Android 16 (API 36) with:
+//   NoSuchMethodException: android.hardware.input.InputManager.getInstance []
+configurations.configureEach {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "androidx.test.espresso") {
+            useVersion("3.7.0")
+        }
+    }
+}
+
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
@@ -84,6 +95,10 @@ dependencies {
     testImplementation(libs.coroutines.test)
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.compose.ui.test.junit4)
+    androidTestImplementation(libs.uiautomator)
+    androidTestImplementation(libs.test.runner)
+    androidTestImplementation(libs.test.rules)
+    androidTestImplementation(libs.test.ext.junit)
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manifest)
 }

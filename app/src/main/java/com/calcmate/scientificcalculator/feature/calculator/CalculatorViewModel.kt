@@ -23,6 +23,9 @@ import kotlinx.coroutines.launch
 
 class CalculatorViewModel(application: Application) : AndroidViewModel(application) {
 
+    private val _state = MutableStateFlow(CalculatorState())
+    val state: StateFlow<CalculatorState> = _state.asStateFlow()
+
     private val historyRepository: HistoryRepository
 
     init {
@@ -35,9 +38,6 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
             }
         }
     }
-
-    private val _state = MutableStateFlow(CalculatorState())
-    val state: StateFlow<CalculatorState> = _state.asStateFlow()
 
     fun onAction(action: CalculatorAction) {
         when (action) {

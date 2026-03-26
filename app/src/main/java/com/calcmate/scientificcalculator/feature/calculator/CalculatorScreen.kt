@@ -11,7 +11,6 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -31,39 +30,33 @@ fun CalculatorScreen(
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
-    Scaffold { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-        ) {
-            if (isLandscape) {
-                LandscapeLayout(
-                    state = state,
-                    onAction = viewModel::onAction,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            } else {
-                PortraitLayout(
-                    state = state,
-                    onAction = viewModel::onAction,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (isLandscape) {
+            LandscapeLayout(
+                state = state,
+                onAction = viewModel::onAction,
+                modifier = Modifier.fillMaxSize(),
+            )
+        } else {
+            PortraitLayout(
+                state = state,
+                onAction = viewModel::onAction,
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
 
-            // History icon button in top-right corner
-            IconButton(
-                onClick = { viewModel.onAction(CalculatorAction.ShowHistory) },
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(4.dp),
-            ) {
-                Icon(
-                    imageVector = Icons.Default.History,
-                    contentDescription = "History",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+        // History icon button in top-right corner
+        IconButton(
+            onClick = { viewModel.onAction(CalculatorAction.ShowHistory) },
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(4.dp),
+        ) {
+            Icon(
+                imageVector = Icons.Default.History,
+                contentDescription = "History",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 
