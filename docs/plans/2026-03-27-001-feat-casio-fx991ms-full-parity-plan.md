@@ -1,7 +1,7 @@
 ---
 title: "feat: Casio fx-991MS Full Function Parity"
 type: feat
-status: active
+status: in-progress
 date: 2026-03-27
 origin: docs/brainstorms/2026-03-26-casio-fx991ms-parity-requirements.md
 ---
