@@ -91,7 +91,7 @@ fun ExpressionDisplay(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(start = 16.dp, end = 48.dp, top = 8.dp, bottom = 8.dp)
             .semantics(mergeDescendants = true) {
                 contentDescription = "$expressionDesc. $resultDesc"
             },

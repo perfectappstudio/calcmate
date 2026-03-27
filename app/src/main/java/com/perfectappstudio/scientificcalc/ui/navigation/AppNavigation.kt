@@ -22,6 +22,7 @@ import com.perfectappstudio.scientificcalc.feature.converter.ConverterScreen
 import com.perfectappstudio.scientificcalc.feature.graphing.GraphScreen
 import com.perfectappstudio.scientificcalc.feature.solver.SolverScreen
 import com.perfectappstudio.scientificcalc.feature.statistics.StatisticsScreen
+import com.perfectappstudio.scientificcalc.ads.BannerAdComposable
 import com.perfectappstudio.scientificcalc.ui.components.CalcMateNavigationBar
 import com.perfectappstudio.scientificcalc.ui.components.deepSpaceBackground
 import com.perfectappstudio.scientificcalc.ui.components.navDestinations
@@ -43,10 +44,13 @@ fun AppNavigation() {
             modifier = Modifier.weight(1f),
             containerColor = DeepSpaceBase.copy(alpha = 0f), // transparent so gradient shows through
             bottomBar = {
-                CalcMateNavigationBar(
-                    currentRoute = currentRoute,
-                    onNavigate = { route -> currentRoute = route },
-                )
+                Column {
+                    BannerAdComposable()
+                    CalcMateNavigationBar(
+                        currentRoute = currentRoute,
+                        onNavigate = { route -> currentRoute = route },
+                    )
+                }
             },
         ) { innerPadding ->
             AnimatedContent(
