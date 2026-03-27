@@ -3,7 +3,7 @@
 -keep class com.google.ads.** { *; }
 
 # Keep Room entities
--keep class com.calcmate.scientificcalculator.core.data.HistoryEntry { *; }
+-keep class com.perfectappstudio.scientificcalc.core.data.HistoryEntry { *; }
 
 # Keep Billing classes
 -keep class com.android.vending.billing.** { *; }

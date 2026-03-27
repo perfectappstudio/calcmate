@@ -5,23 +5,43 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+import java.util.Properties
+
+val versionProps = Properties().apply {
+    val file = rootProject.file("version.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+
 android {
-    namespace = "com.calcmate.scientificcalculator"
+    namespace = "com.perfectappstudio.scientificcalc"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.calcmate.scientificcalculator"
+        applicationId = "com.perfectappstudio.scientificcalc"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = versionProps.getProperty("VERSION_CODE", "1").toInt()
+        versionName = versionProps.getProperty("VERSION_NAME", "1.0.0")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        create("release") {
+            val ksFile = System.getenv("KEYSTORE_FILE")
+            if (ksFile != null) {
+                storeFile = file(ksFile)
+                storePassword = System.getenv("KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS")
+                keyPassword = System.getenv("KEY_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
