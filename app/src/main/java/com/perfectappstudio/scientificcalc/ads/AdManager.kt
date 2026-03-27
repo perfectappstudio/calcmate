@@ -15,10 +15,10 @@ import androidx.compose.runtime.setValue
  */
 object AdManager {
 
-    // --------------- Test Ad Unit IDs ---------------
-    const val BANNER_AD_UNIT_ID = "ca-app-pub-3940256099942544/6300978111"
-    const val INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712"
-    const val REWARDED_AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917"
+    // --------------- Production Ad Unit IDs ---------------
+    const val BANNER_AD_UNIT_ID = "ca-app-pub-4637692872834816/3658089280"
+    const val INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-4637692872834816/7611652484"
+    const val REWARDED_AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917" // test ID until rewarded unit created
 
     // --------------- Premium state ---------------
     /** True when the user has purchased ad removal via IAP. */
