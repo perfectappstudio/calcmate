@@ -1,0 +1,18 @@
+Title: CalcMate Scientific Calculator
+Short description: Scientific calculations, graphs, equation solvers, units, and local history.
+
+CalcMate brings everyday and scientific calculations together in one app.
+
+CALCULATE
+Use trigonometric functions, logarithms, powers, roots, factorials, and percentages. Switch between degrees, radians, and gradians. Choose scientific, fixed, or engineering display settings. Switch results between decimals, mixed fractions, and improper fractions. Rational approximations are marked with ≈.
+
+KEEP YOUR WORK
+Review and reuse local calculation history. Copy results or share a calculation with another app.
+
+EXPLORE
+Plot functions, solve supported linear, quadratic, cubic, and system equations, convert units, and calculate statistics. Open More tools for numerical derivatives and definite integrals, matrix, vector, Base-N calculations, and searchable constants. Numerical calculus reports convergence estimates; it is not symbolic algebra.
+
+FOCUS
+A readable display and familiar keypad grouping keep common operations close at hand. Switch to Basic mode when you need fewer controls. Built-in examples and help make it easier to try unfamiliar operations. On compact screens, scientific functions scroll while the result and number keys remain readable.
+
+Core calculation tools work offline. Ads and downloadable fonts may use the internet. Calculation history stays on your device, subject to your Android backup settings. See the privacy policy for advertising SDK data practices.
