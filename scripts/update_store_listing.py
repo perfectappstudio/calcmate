@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare reviewed store assets; --apply saves them for Play Console review."""
+"""Prepare reviewed store assets; --apply submits them to Google Play review."""
 
 import argparse
 import json
@@ -64,8 +64,8 @@ def main() -> None:
             images.upload(packageName=PACKAGE_NAME, editId=edit_id, language="en-US", imageType=image_type,
                           media_body=MediaFileUpload(str(path), mimetype="image/png")).execute()
     edits.validate(packageName=PACKAGE_NAME, editId=edit_id).execute()
-    edits.commit(packageName=PACKAGE_NAME, editId=edit_id, changesNotSentForReview=True).execute()
-    print("Store assets saved. Submit them with the production release in Play Console.")
+    edits.commit(packageName=PACKAGE_NAME, editId=edit_id).execute()
+    print("Store assets submitted to Google Play's automatic review.")
 
 
 if __name__ == "__main__":

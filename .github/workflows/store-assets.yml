@@ -1,0 +1,23 @@
+name: Submit store assets
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  listing:
+    runs-on: ubuntu-latest
+    environment: Playstore
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Submit verified copy and screenshots
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          python -m pip install 'google-api-python-client>=2,<3' 'google-auth>=2,<3'
+          python scripts/update_store_listing.py --apply

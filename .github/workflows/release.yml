@@ -3,6 +3,14 @@ name: Build, Sign & Deploy
 on:
   push:
     branches: [main]
+    paths:
+      - 'app/**'
+      - 'gradle/**'
+      - 'build.gradle.kts'
+      - 'settings.gradle.kts'
+      - 'gradle.properties'
+      - 'gradlew'
+      - 'version.properties'
 
 jobs:
   release:
@@ -98,10 +106,3 @@ jobs:
           releaseFiles: app/build/outputs/bundle/release/app-release.aab
           track: internal
           status: completed
-
-      - name: Prepare reviewed store assets
-        env:
-          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
-        run: |
-          python -m pip install 'google-api-python-client>=2,<3' 'google-auth>=2,<3'
-          python scripts/update_store_listing.py --apply
