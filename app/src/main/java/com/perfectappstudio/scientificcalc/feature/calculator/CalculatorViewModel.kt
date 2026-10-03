@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.perfectappstudio.scientificcalc.core.data.AppDatabase
 import com.perfectappstudio.scientificcalc.core.data.HistoryEntry
 import com.perfectappstudio.scientificcalc.core.data.HistoryRepository
+import com.perfectappstudio.scientificcalc.core.data.PreferencesManager
 import com.perfectappstudio.scientificcalc.core.model.AngleUnit
 import com.perfectappstudio.scientificcalc.core.model.CalculatorAction
 import com.perfectappstudio.scientificcalc.core.model.CalculatorState
@@ -28,8 +29,23 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
     val state: StateFlow<CalculatorState> = _state.asStateFlow()
 
     private val historyRepository: HistoryRepository
+    private var completedResult: CalcResult? = null
+    private val preferences = PreferencesManager(application)
 
     init {
+        viewModelScope.launch {
+            preferences.angleUnit.collect { unit ->
+                val angle = AngleUnit.entries.firstOrNull { it.name.equals(unit, ignoreCase = true) }
+                    ?: AngleUnit.DEGREE
+                _state.update { it.copy(angleUnit = angle) }
+                updateLivePreview()
+            }
+        }
+        viewModelScope.launch {
+            preferences.displaySettings.collect { settings ->
+                applyDisplaySettings(settings)
+            }
+        }
         val dao = AppDatabase.getDatabase(application).historyDao()
         historyRepository = HistoryRepository(dao)
 
@@ -54,6 +70,9 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
             is CalculatorAction.Backspace -> onBackspace()
             is CalculatorAction.ToggleSign -> onToggleSign()
             is CalculatorAction.ToggleDisplayFormat -> onToggleDisplayFormat()
+            is CalculatorAction.ToggleFractionDisplay -> setDisplaySettings(
+                _state.value.displaySettings.copy(showFractions = !_state.value.displaySettings.showFractions),
+            )
             is CalculatorAction.ToggleAngleUnit -> onToggleAngleUnit()
             is CalculatorAction.ToggleScientific -> onToggleScientific()
             is CalculatorAction.ToggleInverse -> onToggleInverse()
@@ -86,7 +105,13 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
 
     private fun onDecimal() {
         val current = _state.value
-        val newExpression = if (current.hasEvaluated) "0." else current.expression + "."
+        val currentNumber = current.expression.takeLastWhile { it.isDigit() || it == '.' }
+        if (!current.hasEvaluated && '.' in currentNumber) return
+        val newExpression = when {
+            current.hasEvaluated -> "0."
+            currentNumber.isEmpty() -> current.expression + "0."
+            else -> current.expression + "."
+        }
         _state.update {
             it.copy(
                 expression = newExpression,
@@ -159,7 +184,9 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
 
     private fun onConstant(symbol: String) {
         val current = _state.value
-        val newExpression = if (current.hasEvaluated) symbol else current.expression + symbol
+        val base = if (current.hasEvaluated) "" else current.expression
+        val multiply = base.lastOrNull()?.let { it.isDigit() || it in ").!%πeABCDEFMXY" } == true || base.endsWith("Ans")
+        val newExpression = base + (if (multiply) "×" else "") + symbol
         _state.update {
             it.copy(
                 expression = newExpression,
@@ -200,6 +227,7 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
 
         try {
             val (displayStr, calcResult) = evaluateExpressionFull(current.expression, current.angleUnit, current.displaySettings)
+            completedResult = calcResult
             MemoryManager.ans = calcResult
             _state.update {
                 it.copy(
@@ -209,14 +237,16 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
                 )
             }
             // Save to history
-            val formatName = current.displaySettings.mode.name.lowercase()
+            val formatName = if (current.displaySettings.showFractions) {
+                "fraction_${current.displaySettings.fractionFormat.name.lowercase()}"
+            } else current.displaySettings.mode.name.lowercase()
             viewModelScope.launch {
                 historyRepository.addEntry(current.expression, displayStr, formatName)
             }
         } catch (_: Exception) {
             _state.update {
                 it.copy(
-                    error = "Error",
+                    error = "Check the expression or the function's domain",
                     result = "",
                     hasEvaluated = false,
                 )
@@ -263,7 +293,9 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
         val current = _state.value
         if (current.expression.isEmpty()) return
 
-        val newExpression = if (current.expression.startsWith("-(") && current.expression.endsWith(")")) {
+        val newExpression = if (current.hasEvaluated) {
+            "-(${completedResult?.toDouble() ?: return})"
+        } else if (current.expression.startsWith("-(") && current.expression.endsWith(")")) {
             // Remove negation wrapper: -(expr) -> expr
             current.expression.removePrefix("-(").removeSuffix(")")
         } else {
@@ -287,21 +319,13 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
             val idx = modes.indexOf(currentMode)
             modes[(idx + 1) % modes.size]
         }
-        val nextSettings = _state.value.displaySettings.copy(mode = nextMode)
-        _state.update { it.copy(displaySettings = nextSettings) }
-        // Re-evaluate if there's a result to show in the new format
-        if (_state.value.hasEvaluated && _state.value.expression.isNotBlank()) {
-            try {
-                val result = evaluateExpression(
-                    _state.value.expression,
-                    _state.value.angleUnit,
-                    nextSettings,
-                )
-                _state.update { it.copy(result = result) }
-            } catch (_: Exception) {
-                // keep existing result
-            }
+        val digits = when (nextMode) {
+            com.perfectappstudio.scientificcalc.core.model.DisplayMode.FIX -> _state.value.displaySettings.digits.coerceIn(0, 9)
+            com.perfectappstudio.scientificcalc.core.model.DisplayMode.SCI -> _state.value.displaySettings.digits.coerceIn(1, 10)
+            else -> _state.value.displaySettings.digits
         }
+        val nextSettings = _state.value.displaySettings.copy(mode = nextMode, digits = digits)
+        setDisplaySettings(nextSettings)
     }
 
     private fun onToggleAngleUnit() {
@@ -310,8 +334,41 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
             AngleUnit.RADIAN -> AngleUnit.GRADIAN
             AngleUnit.GRADIAN -> AngleUnit.DEGREE
         }
-        _state.update { it.copy(angleUnit = nextUnit) }
+        setAngleUnit(nextUnit)
+    }
+
+    fun setAngleUnit(unit: AngleUnit) {
+        _state.update { it.copy(angleUnit = unit) }
         updateLivePreview()
+        viewModelScope.launch { preferences.setAngleUnit(unit.name.lowercase()) }
+    }
+
+    fun setDisplaySettings(settings: DisplaySettings) {
+        applyDisplaySettings(settings)
+        viewModelScope.launch { preferences.setDisplaySettings(settings) }
+    }
+
+    fun useToolResult(value: Double) {
+        require(value.isFinite())
+        val result = CalcResult.RealResult(value)
+        completedResult = result
+        MemoryManager.ans = result
+        _state.update {
+            it.copy(expression = value.toString(), result = Formatter().formatWithSettings(value, it.displaySettings),
+                error = null, hasEvaluated = true)
+        }
+    }
+
+    private fun applyDisplaySettings(settings: DisplaySettings) {
+        _state.update { it.copy(displaySettings = settings) }
+        if (_state.value.expression.isBlank()) return
+        if (_state.value.hasEvaluated) {
+            completedResult?.let { result ->
+                _state.update { it.copy(result = Formatter().formatWithSettings(result.toDouble(), settings)) }
+            }
+        } else {
+            updateLivePreview()
+        }
     }
 
     private fun onToggleScientific() {
@@ -340,12 +397,13 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
         _state.update {
             it.copy(
                 expression = entry.expression,
-                result = entry.result,
+                result = "",
                 error = null,
-                hasEvaluated = true,
+                hasEvaluated = false,
                 showHistory = false,
             )
         }
+        updateLivePreview()
     }
 
     private fun onDeleteHistoryEntry(entry: HistoryEntry) {
@@ -362,6 +420,7 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
 
     private fun updateLivePreview() {
         val current = _state.value
+        if (current.hasEvaluated) return
         if (current.expression.isBlank()) {
             _state.update { it.copy(result = "") }
             return
@@ -370,7 +429,7 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
             val result = evaluateExpression(current.expression, current.angleUnit, current.displaySettings)
             _state.update { it.copy(result = result, error = null) }
         } catch (_: Exception) {
-            // Silently ignore preview errors -- expression is likely incomplete
+            _state.update { it.copy(result = "", error = null) }
         }
     }
 
@@ -378,8 +437,7 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
         val current = _state.value
         if (!current.hasEvaluated || current.result.isEmpty()) return
         try {
-            val (_, calcResult) = evaluateExpressionFull(current.expression, current.angleUnit, current.displaySettings)
-            MemoryManager.storeVariable(name, calcResult)
+            MemoryManager.storeVariable(name, completedResult ?: return)
         } catch (_: Exception) {
             // ignore
         }
@@ -408,8 +466,7 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
         val current = _state.value
         if (!current.hasEvaluated || current.result.isEmpty()) return
         try {
-            val (_, calcResult) = evaluateExpressionFull(current.expression, current.angleUnit, current.displaySettings)
-            MemoryManager.addToM(calcResult.toDouble())
+            MemoryManager.addToM(completedResult?.toDouble() ?: return)
             _state.update { it.copy(mIndicator = MemoryManager.independentM != 0.0) }
         } catch (_: Exception) {
             // ignore
@@ -420,8 +477,7 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
         val current = _state.value
         if (!current.hasEvaluated || current.result.isEmpty()) return
         try {
-            val (_, calcResult) = evaluateExpressionFull(current.expression, current.angleUnit, current.displaySettings)
-            MemoryManager.subtractFromM(calcResult.toDouble())
+            MemoryManager.subtractFromM(completedResult?.toDouble() ?: return)
             _state.update { it.copy(mIndicator = MemoryManager.independentM != 0.0) }
         } catch (_: Exception) {
             // ignore
@@ -446,6 +502,7 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
         val tokens = Lexer(normalized).tokenize()
         val ast = Parser(tokens).parse()
         val result = Evaluator(angleUnit).evaluate(ast)
+        require(result.toDouble().isFinite()) { "No finite real result" }
 
         val formatter = Formatter()
         val displayStr = formatter.formatWithSettings(result.toDouble(), displaySettings)
@@ -457,18 +514,6 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
         angleUnit: AngleUnit,
         displaySettings: DisplaySettings,
     ): String {
-        // Normalize display operators to parser-compatible symbols
-        val normalized = expression
-            .replace("\u00D7", "*")  // multiply sign
-            .replace("\u00F7", "/") // division sign
-            .replace("\u2212", "-") // minus sign
-            .replace("\u03C0", "pi") // pi symbol -> keyword for lexer
-
-        val tokens = Lexer(normalized).tokenize()
-        val ast = Parser(tokens).parse()
-        val result = Evaluator(angleUnit).evaluate(ast)
-
-        val formatter = Formatter()
-        return formatter.formatWithSettings(result.toDouble(), displaySettings)
+        return evaluateExpressionFull(expression, angleUnit, displaySettings).first
     }
 }

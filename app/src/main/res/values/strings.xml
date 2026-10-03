@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">CalcMate</string>
-    <string name="nav_calculator">Calculator</string>
-    <string name="nav_graph">Graph</string>
-    <string name="nav_solver">Solver</string>
-    <string name="nav_converter">Converter</string>
+    <string name="nav_calculator" translatable="false">Calculator</string>
+    <string name="nav_graph" translatable="false">Graph</string>
+    <string name="nav_solver" translatable="false">Solver</string>
+    <string name="nav_converter" translatable="false">Converter</string>
 </resources>

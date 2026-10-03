@@ -5,6 +5,7 @@ data class DisplaySettings(
     val digits: Int = 10,
     val engineeringOn: Boolean = false,
     val fractionFormat: FractionFormat = FractionFormat.MIXED,
+    val showFractions: Boolean = false,
 )
 
 enum class DisplayMode { FIX, SCI, NORM_1, NORM_2 }

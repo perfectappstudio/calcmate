@@ -5,6 +5,10 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,6 +39,7 @@ fun ExpressionDisplay(
     error: String?,
     hasEvaluated: Boolean,
     modifier: Modifier = Modifier,
+    compact: Boolean = false,
 ) {
     val expressionScrollState = rememberScrollState()
 
@@ -45,18 +50,18 @@ fun ExpressionDisplay(
 
     val expressionColor by animateColorAsState(
         targetValue = if (hasEvaluated) {
-            Color.White.copy(alpha = 0.6f)
+            Color(0xFF4A605A)
         } else {
-            Color.White
+            Color(0xFF152C25)
         },
         label = "expressionColor",
     )
 
     val resultColor by animateColorAsState(
         targetValue = if (hasEvaluated) {
-            Color.White
+            Color(0xFF152C25)
         } else {
-            Color.White.copy(alpha = 0.6f)
+            Color(0xFF4A605A)
         },
         label = "resultColor",
     )
@@ -68,13 +73,13 @@ fun ExpressionDisplay(
         label = "resultAlpha",
     )
 
-    val expressionStyle = if (hasEvaluated) {
+    val expressionStyle = if (hasEvaluated || compact) {
         MaterialTheme.typography.bodyLarge
     } else {
         MaterialTheme.typography.headlineMedium
     }
 
-    val resultStyle = if (hasEvaluated) {
+    val resultStyle = if (hasEvaluated && !compact) {
         MaterialTheme.typography.displayLarge
     } else {
         MaterialTheme.typography.headlineLarge
@@ -91,7 +96,10 @@ fun ExpressionDisplay(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 48.dp, top = 8.dp, bottom = 8.dp)
+            .padding(horizontal = 12.dp, vertical = 4.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color(0xFFDBE9E1))
+            .padding(horizontal = 20.dp, vertical = if (compact) 8.dp else 16.dp)
             .semantics(mergeDescendants = true) {
                 contentDescription = "$expressionDesc. $resultDesc"
             },
@@ -100,7 +108,7 @@ fun ExpressionDisplay(
     ) {
         // Expression line
         Text(
-            text = expression.ifEmpty { " " },
+            text = expression.ifEmpty { "0" },
             modifier = Modifier
                 .fillMaxWidth()
                 .horizontalScroll(expressionScrollState)
@@ -118,18 +126,19 @@ fun ExpressionDisplay(
             text = error ?: result.ifEmpty { " " },
             modifier = Modifier
                 .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
                 .alpha(resultAlpha)
                 .animateContentSize(animationSpec = tween(200))
                 .clearAndSetSemantics { },
             textAlign = TextAlign.End,
-            style = resultStyle,
+            style = if (error != null) MaterialTheme.typography.bodyMedium else resultStyle,
             color = if (error != null) {
                 Color(0xFFEF4444) // Red for errors
             } else {
                 resultColor
             },
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
+            overflow = TextOverflow.Clip,
         )
 
         // Hidden live region for TalkBack to announce result changes

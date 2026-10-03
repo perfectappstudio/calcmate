@@ -20,20 +20,22 @@ enum class ConstantCategory(val displayName: String) {
 }
 
 object Constants {
+    const val SOURCE = "CODATA 2022 / SI definitions"
+    const val SOURCE_URL = "https://physics.nist.gov/cuu/Constants/Table/allascii.txt"
     val PI_VALUE = PhysicalConstant("Pi", "\u03C0", PI, "", ConstantCategory.UNIVERSAL)
     val E_VALUE = PhysicalConstant("Euler's Number", "e", E, "", ConstantCategory.UNIVERSAL)
 
     // ── Particle Physics (01-04) ────────────────────────────────────────
     val PROTON_MASS = PhysicalConstant(
-        "Proton Mass", "m\u209A", 1.67262192369e-27, "kg",
+        "Proton Mass", "m\u209A", 1.67262192595e-27, "kg",
         ConstantCategory.PARTICLE_PHYSICS,
     )
     val NEUTRON_MASS = PhysicalConstant(
-        "Neutron Mass", "m\u2099", 1.67492749804e-27, "kg",
+        "Neutron Mass", "m\u2099", 1.67492750056e-27, "kg",
         ConstantCategory.PARTICLE_PHYSICS,
     )
     val ELECTRON_MASS = PhysicalConstant(
-        "Electron Mass", "m\u2091", 9.1093837015e-31, "kg",
+        "Electron Mass", "m\u2091", 9.1093837139e-31, "kg",
         ConstantCategory.PARTICLE_PHYSICS,
     )
     val MUON_MASS = PhysicalConstant(
@@ -43,35 +45,35 @@ object Constants {
 
     // ── Atomic (05, 10-16) ──────────────────────────────────────────────
     val BOHR_RADIUS = PhysicalConstant(
-        "Bohr Radius", "a\u2080", 5.29177210903e-11, "m",
+        "Bohr Radius", "a\u2080", 5.29177210544e-11, "m",
         ConstantCategory.ATOMIC,
     )
     val FINE_STRUCTURE = PhysicalConstant(
-        "Fine-Structure Constant", "\u03B1", 7.2973525693e-3, "",
+        "Fine-Structure Constant", "\u03B1", 0.0072973525643, "",
         ConstantCategory.ATOMIC,
     )
     val CLASSICAL_ELECTRON_RADIUS = PhysicalConstant(
-        "Classical Electron Radius", "r\u2091", 2.8179403262e-15, "m",
+        "Classical Electron Radius", "r\u2091", 2.8179403205e-15, "m",
         ConstantCategory.ATOMIC,
     )
     val COMPTON_WAVELENGTH = PhysicalConstant(
-        "Compton Wavelength", "\u03BB\u1D04", 2.42631023867e-12, "m",
+        "Compton Wavelength", "\u03BB\u1D04", 2.42631023538e-12, "m",
         ConstantCategory.ATOMIC,
     )
     val PROTON_COMPTON_WAVELENGTH = PhysicalConstant(
-        "Proton Compton Wavelength", "\u03BB\u1D04\u209A", 1.32140985539e-15, "m",
+        "Proton Compton Wavelength", "\u03BB\u1D04\u209A", 1.3214098536e-15, "m",
         ConstantCategory.ATOMIC,
     )
     val NEUTRON_COMPTON_WAVELENGTH = PhysicalConstant(
-        "Neutron Compton Wavelength", "\u03BB\u1D04\u2099", 1.31959090581e-15, "m",
+        "Neutron Compton Wavelength", "\u03BB\u1D04\u2099", 1.31959090382e-15, "m",
         ConstantCategory.ATOMIC,
     )
     val RYDBERG_CONSTANT = PhysicalConstant(
-        "Rydberg Constant", "R\u221E", 1.0973731568160e7, "m\u207B\u00B9",
+        "Rydberg Constant", "R\u221E", 10973731.568157, "m\u207B\u00B9",
         ConstantCategory.ATOMIC,
     )
     val ATOMIC_MASS_UNIT = PhysicalConstant(
-        "Atomic Mass Unit", "u", 1.66053906660e-27, "kg",
+        "Atomic Mass Unit", "u", 1.66053906892e-27, "kg",
         ConstantCategory.ATOMIC,
     )
 
@@ -81,27 +83,27 @@ object Constants {
         ConstantCategory.ELECTROMAGNETIC,
     )
     val NUCLEAR_MAGNETON = PhysicalConstant(
-        "Nuclear Magneton", "\u03BC\u2099", 5.0507837461e-27, "J/T",
+        "Nuclear Magneton", "\u03BC\u2099", 5.0507837393e-27, "J/T",
         ConstantCategory.ELECTROMAGNETIC,
     )
     val BOHR_MAGNETON = PhysicalConstant(
-        "Bohr Magneton", "\u03BC\u0042", 9.2740100783e-24, "J/T",
+        "Bohr Magneton", "\u03BC\u0042", 9.2740100657e-24, "J/T",
         ConstantCategory.ELECTROMAGNETIC,
     )
     val REDUCED_PLANCK = PhysicalConstant(
-        "Reduced Planck Constant", "\u0127", 1.054571817e-34, "J\u00B7s",
+        "Reduced Planck Constant", "\u0127", 1.0545718176461565e-34, "J\u00B7s",
         ConstantCategory.ELECTROMAGNETIC,
     )
     val PROTON_MAGNETIC_MOMENT = PhysicalConstant(
-        "Proton Magnetic Moment", "\u03BC\u209A", 1.41060674333e-26, "J/T",
+        "Proton Magnetic Moment", "\u03BC\u209A", 1.41060679545e-26, "J/T",
         ConstantCategory.ELECTROMAGNETIC,
     )
     val ELECTRON_MAGNETIC_MOMENT = PhysicalConstant(
-        "Electron Magnetic Moment", "\u03BC\u2091", -9.2847647043e-24, "J/T",
+        "Electron Magnetic Moment", "\u03BC\u2091", -9.2847646917e-24, "J/T",
         ConstantCategory.ELECTROMAGNETIC,
     )
     val NEUTRON_MAGNETIC_MOMENT = PhysicalConstant(
-        "Neutron Magnetic Moment", "\u03BC\u2099\u2099", -9.6623651e-27, "J/T",
+        "Neutron Magnetic Moment", "\u03BC\u2099\u2099", -9.6623653e-27, "J/T",
         ConstantCategory.ELECTROMAGNETIC,
     )
     val MUON_MAGNETIC_MOMENT = PhysicalConstant(
@@ -109,7 +111,7 @@ object Constants {
         ConstantCategory.ELECTROMAGNETIC,
     )
     val FARADAY = PhysicalConstant(
-        "Faraday Constant", "F", 96485.33212, "C/mol",
+        "Faraday Constant", "F", 96485.33212331001, "C/mol",
         ConstantCategory.ELECTROMAGNETIC,
     )
     val ELEMENTARY_CHARGE = PhysicalConstant(
@@ -117,21 +119,21 @@ object Constants {
         ConstantCategory.ELECTROMAGNETIC,
     )
     val ELECTRIC_CONSTANT = PhysicalConstant(
-        "Electric Constant", "\u03B5\u2080", 8.8541878128e-12, "F/m",
+        "Electric Constant", "\u03B5\u2080", 8.8541878188e-12, "F/m",
         ConstantCategory.ELECTROMAGNETIC,
     )
     val MAGNETIC_CONSTANT = PhysicalConstant(
-        "Magnetic Constant", "\u03BC\u2080", 1.25663706212e-6, "N/A\u00B2",
+        "Magnetic Constant", "\u03BC\u2080", 1.25663706127e-06, "N/A\u00B2",
         ConstantCategory.ELECTROMAGNETIC,
     )
     val MAGNETIC_FLUX_QUANTUM = PhysicalConstant(
-        "Magnetic Flux Quantum", "\u03A6\u2080", 2.067833848e-15, "Wb",
+        "Magnetic Flux Quantum", "\u03A6\u2080", 2.0678338484619295e-15, "Wb",
         ConstantCategory.ELECTROMAGNETIC,
     )
 
     // ── Thermodynamic (24-27, 31, 38) ──────────────────────────────────
     val AVOGADRO = PhysicalConstant(
-        "Avogadro Constant", "N\u2090", 6.02214076e23, "mol\u207B\u00B9",
+        "Avogadro Constant", "N\u2090", 6.02214076e+23, "mol\u207B\u00B9",
         ConstantCategory.THERMODYNAMIC,
     )
     val BOLTZMANN = PhysicalConstant(
@@ -139,15 +141,15 @@ object Constants {
         ConstantCategory.THERMODYNAMIC,
     )
     val MOLAR_VOLUME = PhysicalConstant(
-        "Molar Volume of Ideal Gas", "V\u2098", 0.022413969545, "m\u00B3/mol",
+        "Molar Volume of Ideal Gas (273.15 K, 101.325 kPa)", "V\u2098", 0.022413969545014137, "m\u00B3/mol",
         ConstantCategory.THERMODYNAMIC,
     )
     val MOLAR_GAS = PhysicalConstant(
-        "Molar Gas Constant", "R", 8.314462618, "J/(mol\u00B7K)",
+        "Molar Gas Constant", "R", 8.31446261815324, "J/(mol\u00B7K)",
         ConstantCategory.THERMODYNAMIC,
     )
     val STEFAN_BOLTZMANN = PhysicalConstant(
-        "Stefan-Boltzmann Constant", "\u03C3", 5.670374419e-8, "W/(m\u00B2\u00B7K\u2074)",
+        "Stefan-Boltzmann Constant", "\u03C3", 5.6703744191844314e-08, "W/(m\u00B2\u00B7K\u2074)",
         ConstantCategory.THERMODYNAMIC,
     )
     val CELSIUS_TEMPERATURE = PhysicalConstant(
@@ -157,7 +159,7 @@ object Constants {
 
     // ── Universal (13, 28-30, 35-40) ───────────────────────────────────
     val PROTON_GYROMAGNETIC_RATIO = PhysicalConstant(
-        "Proton Gyromagnetic Ratio", "\u03B3\u209A", 2.6752218744e8, "rad/(s\u00B7T)",
+        "Proton Gyromagnetic Ratio", "\u03B3\u209A", 267522187.08, "rad/(s\u00B7T)",
         ConstantCategory.UNIVERSAL,
     )
     val SPEED_OF_LIGHT = PhysicalConstant(
@@ -165,11 +167,11 @@ object Constants {
         ConstantCategory.UNIVERSAL,
     )
     val FIRST_RADIATION = PhysicalConstant(
-        "First Radiation Constant", "c\u2081", 3.741771852e-16, "W\u00B7m\u00B2",
+        "First Radiation Constant", "c\u2081", 3.7417718521927573e-16, "W\u00B7m\u00B2",
         ConstantCategory.UNIVERSAL,
     )
     val SECOND_RADIATION = PhysicalConstant(
-        "Second Radiation Constant", "c\u2082", 0.014387768775, "m\u00B7K",
+        "Second Radiation Constant", "c\u2082", 0.014387768775039337, "m\u00B7K",
         ConstantCategory.UNIVERSAL,
     )
     val GRAVITY = PhysicalConstant(
@@ -177,15 +179,15 @@ object Constants {
         ConstantCategory.UNIVERSAL,
     )
     val CONDUCTANCE_QUANTUM = PhysicalConstant(
-        "Conductance Quantum", "G\u2080", 7.748091729e-5, "S",
+        "Conductance Quantum", "G\u2080", 7.748091729863649e-05, "S",
         ConstantCategory.UNIVERSAL,
     )
     val IMPEDANCE_OF_VACUUM = PhysicalConstant(
-        "Characteristic Impedance of Vacuum", "Z\u2080", 376.730313668, "\u03A9",
+        "Characteristic Impedance of Vacuum", "Z\u2080", 376.730313412, "\u03A9",
         ConstantCategory.UNIVERSAL,
     )
     val GRAVITATIONAL = PhysicalConstant(
-        "Newtonian Gravitational Constant", "G", 6.67430e-11, "m\u00B3/(kg\u00B7s\u00B2)",
+        "Newtonian Gravitational Constant", "G", 6.6743e-11, "m\u00B3/(kg\u00B7s\u00B2)",
         ConstantCategory.UNIVERSAL,
     )
     val STANDARD_ATMOSPHERE = PhysicalConstant(

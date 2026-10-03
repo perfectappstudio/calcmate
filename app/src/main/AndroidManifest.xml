@@ -9,16 +9,17 @@
         android:name=".CalcMateApp"
         android:allowBackup="true"
         android:fullBackupContent="@xml/backup_rules"
-        android:dataExtractionRules="@xml/backup_rules"
+        android:dataExtractionRules="@xml/data_extraction_rules"
         android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="CalcMate"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:label="${appDisplayName}"
         android:supportsRtl="true"
         android:theme="@style/Theme.CalcMate">
 
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-4637692872834816~6751156482" />
+            android:value="${admobAppId}" />
 
         <activity
             android:name=".MainActivity"

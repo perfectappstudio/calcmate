@@ -84,7 +84,11 @@ private fun LandToggleChips(
         LandGlassToggleChip(
             selected = state.angleUnit == AngleUnit.RADIAN,
             onClick = { onAction(CalculatorAction.ToggleAngleUnit) },
-            label = if (state.angleUnit == AngleUnit.RADIAN) "RAD" else "DEG",
+            label = when (state.angleUnit) {
+                AngleUnit.DEGREE -> "DEG"
+                AngleUnit.RADIAN -> "RAD"
+                AngleUnit.GRADIAN -> "GRAD"
+            },
         )
         LandGlassToggleChip(
             selected = state.isInverse,

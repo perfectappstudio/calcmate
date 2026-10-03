@@ -1,0 +1,40 @@
+identifier	name	value	NIST quantity	NIST printed value	uncertainty	NIST unit
+PROTON_MASS	Proton Mass	1.67262192595e-27	proton mass	1.672 621 925 95 e-27	0.000 000 000 52 e-27	kg
+NEUTRON_MASS	Neutron Mass	1.67492750056e-27	neutron mass	1.674 927 500 56 e-27	0.000 000 000 85 e-27	kg
+ELECTRON_MASS	Electron Mass	9.1093837139e-31	electron mass	9.109 383 7139 e-31	0.000 000 0028 e-31	kg
+MUON_MASS	Muon Mass	1.883531627e-28	muon mass	1.883 531 627 e-28	0.000 000 042 e-28	kg
+BOHR_RADIUS	Bohr Radius	5.29177210544e-11	Bohr radius	5.291 772 105 44 e-11	0.000 000 000 82 e-11	m
+FINE_STRUCTURE	Fine-Structure Constant	0.0072973525643	fine-structure constant	7.297 352 5643 e-3	0.000 000 0011 e-3	
+CLASSICAL_ELECTRON_RADIUS	Classical Electron Radius	2.8179403205e-15	classical electron radius	2.817 940 3205 e-15	0.000 000 0013 e-15	m
+COMPTON_WAVELENGTH	Compton Wavelength	2.42631023538e-12	Compton wavelength	2.426 310 235 38 e-12	0.000 000 000 76 e-12	m
+PROTON_COMPTON_WAVELENGTH	Proton Compton Wavelength	1.3214098536e-15	proton Compton wavelength	1.321 409 853 60 e-15	0.000 000 000 41 e-15	m
+NEUTRON_COMPTON_WAVELENGTH	Neutron Compton Wavelength	1.31959090382e-15	neutron Compton wavelength	1.319 590 903 82 e-15	0.000 000 000 67 e-15	m
+RYDBERG_CONSTANT	Rydberg Constant	10973731.568157	Rydberg constant	10 973 731.568 157	0.000 012	m^-1
+ATOMIC_MASS_UNIT	Atomic Mass Unit	1.66053906892e-27	atomic mass constant	1.660 539 068 92 e-27	0.000 000 000 52 e-27	kg
+PLANCK	Planck Constant	6.62607015e-34	Planck constant	6.626 070 15 e-34	(exact)	J Hz^-1
+NUCLEAR_MAGNETON	Nuclear Magneton	5.0507837393e-27	nuclear magneton	5.050 783 7393 e-27	0.000 000 0016 e-27	J T^-1
+BOHR_MAGNETON	Bohr Magneton	9.2740100657e-24	Bohr magneton	9.274 010 0657 e-24	0.000 000 0029 e-24	J T^-1
+REDUCED_PLANCK	Reduced Planck Constant	1.0545718176461565e-34	reduced Planck constant	1.054 571 817... e-34	(exact)	J s
+PROTON_MAGNETIC_MOMENT	Proton Magnetic Moment	1.41060679545e-26	proton mag. mom.	1.410 606 795 45 e-26	0.000 000 000 60 e-26	J T^-1
+ELECTRON_MAGNETIC_MOMENT	Electron Magnetic Moment	-9.2847646917e-24	electron mag. mom.	-9.284 764 6917 e-24	0.000 000 0029 e-24	J T^-1
+NEUTRON_MAGNETIC_MOMENT	Neutron Magnetic Moment	-9.6623653e-27	neutron mag. mom.	-9.662 3653 e-27	0.000 0023 e-27	J T^-1
+MUON_MAGNETIC_MOMENT	Muon Magnetic Moment	-4.4904483e-26	muon mag. mom.	-4.490 448 30 e-26	0.000 000 10 e-26	J T^-1
+FARADAY	Faraday Constant	96485.33212331001	Faraday constant	96 485.332 12...	(exact)	C mol^-1
+ELEMENTARY_CHARGE	Elementary Charge	1.602176634e-19	elementary charge	1.602 176 634 e-19	(exact)	C
+ELECTRIC_CONSTANT	Electric Constant	8.8541878188e-12	vacuum electric permittivity	8.854 187 8188 e-12	0.000 000 0014 e-12	F m^-1
+MAGNETIC_CONSTANT	Magnetic Constant	1.25663706127e-06	vacuum mag. permeability	1.256 637 061 27 e-6	0.000 000 000 20 e-6	N A^-2
+MAGNETIC_FLUX_QUANTUM	Magnetic Flux Quantum	2.0678338484619295e-15	mag. flux quantum	2.067 833 848... e-15	(exact)	Wb
+AVOGADRO	Avogadro Constant	6.02214076e+23	Avogadro constant	6.022 140 76 e23	(exact)	mol^-1
+BOLTZMANN	Boltzmann Constant	1.380649e-23	Boltzmann constant	1.380 649 e-23	(exact)	J K^-1
+MOLAR_VOLUME	Molar Volume of Ideal Gas (273.15 K, 101.325 kPa)	0.022413969545014137	molar volume of ideal gas (273.15 K, 101.325 kPa)	22.413 969 54... e-3	(exact)	m^3 mol^-1
+MOLAR_GAS	Molar Gas Constant	8.31446261815324	molar gas constant	8.314 462 618...	(exact)	J mol^-1 K^-1
+STEFAN_BOLTZMANN	Stefan-Boltzmann Constant	5.6703744191844314e-08	Stefan-Boltzmann constant	5.670 374 419... e-8	(exact)	W m^-2 K^-4
+PROTON_GYROMAGNETIC_RATIO	Proton Gyromagnetic Ratio	267522187.08	proton gyromag. ratio	2.675 221 8708 e8	0.000 000 0011 e8	s^-1 T^-1
+SPEED_OF_LIGHT	Speed of Light	299792458.0	speed of light in vacuum	299 792 458	(exact)	m s^-1
+FIRST_RADIATION	First Radiation Constant	3.7417718521927573e-16	first radiation constant	3.741 771 852... e-16	(exact)	W m^2
+SECOND_RADIATION	Second Radiation Constant	0.014387768775039337	second radiation constant	1.438 776 877... e-2	(exact)	m K
+GRAVITY	Standard Acceleration of Gravity	9.80665	standard acceleration of gravity	9.806 65	(exact)	m s^-2
+CONDUCTANCE_QUANTUM	Conductance Quantum	7.748091729863649e-05	conductance quantum	7.748 091 729... e-5	(exact)	S
+IMPEDANCE_OF_VACUUM	Characteristic Impedance of Vacuum	376.730313412	characteristic impedance of vacuum	376.730 313 412	0.000 000 059	ohm
+GRAVITATIONAL	Newtonian Gravitational Constant	6.6743e-11	Newtonian constant of gravitation	6.674 30 e-11	0.000 15 e-11	m^3 kg^-1 s^-2
+STANDARD_ATMOSPHERE	Standard Atmosphere	101325.0	standard atmosphere	101 325	(exact)	Pa

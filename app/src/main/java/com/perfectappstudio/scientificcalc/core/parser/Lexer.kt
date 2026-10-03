@@ -6,6 +6,7 @@ class Lexer(private val input: String) {
     private val tokens = mutableListOf<Token>()
 
     fun tokenize(): List<Token> {
+        require(input.length <= 1024) { "Expression is too long (maximum 1024 characters)" }
         while (pos < input.length) {
             when {
                 input[pos].isWhitespace() -> pos++
@@ -26,10 +27,14 @@ class Lexer(private val input: String) {
             while (pos < input.length && input[pos].isDigit()) pos++
         }
         if (pos < input.length && (input[pos] == 'e' || input[pos] == 'E')) {
-            pos++
-            if (pos < input.length && (input[pos] == '+' || input[pos] == '-')) pos++
-            while (pos < input.length && input[pos].isDigit()) pos++
+            var exponentStart = pos + 1
+            if (exponentStart < input.length && input[exponentStart] in "+-") exponentStart++
+            if (exponentStart < input.length && input[exponentStart].isDigit()) {
+                pos = exponentStart
+                while (pos < input.length && input[pos].isDigit()) pos++
+            }
         }
+        if (pos < input.length && input[pos] == '.') throw ParseException("More than one decimal point")
         val numberStr = input.substring(start, pos)
         addWithImplicitMultiply(Token(TokenType.NUMBER, numberStr))
     }
@@ -76,13 +81,15 @@ class Lexer(private val input: String) {
             "pi" -> Token(TokenType.PI, name)
             "e" -> Token(TokenType.E, name)
             "Ans" -> Token(TokenType.ANS, name)
+            "x" -> Token(TokenType.VARIABLE, "X")
+            "y" -> Token(TokenType.VARIABLE, "Y")
             "Ran#" -> Token(TokenType.RANDOM, name)
             else -> {
                 // Single uppercase letter A-F, M, X, Y -> VARIABLE
                 if (name.length == 1 && name[0] in "ABCDEFMXY") {
                     Token(TokenType.VARIABLE, name)
                 } else {
-                    Token(TokenType.NUMBER, "0") // unknown identifier fallback
+                    throw ParseException("Unknown function or variable: $name")
                 }
             }
         }
@@ -106,8 +113,7 @@ class Lexer(private val input: String) {
             ')' -> Token(TokenType.RPAREN, ")")
             ',' -> Token(TokenType.COMMA, ",")
             else -> {
-                pos++
-                return
+                throw ParseException("Unknown character: ${input[pos]}")
             }
         }
         pos++

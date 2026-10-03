@@ -3,6 +3,7 @@ package com.perfectappstudio.scientificcalc.core.parser
 class Parser(private val tokens: List<Token>) {
 
     private var pos = 0
+    private var depth = 0
 
     private val functionTokenTypes = setOf(
         TokenType.SIN, TokenType.COS, TokenType.TAN,
@@ -46,10 +47,10 @@ class Parser(private val tokens: List<Token>) {
     }
 
     private fun parseTerm(): ASTNode {
-        var node = parseExponent()
+        var node = parseUnary()
         while (current().type in setOf(TokenType.MULTIPLY, TokenType.DIVIDE, TokenType.MOD)) {
             val op = advance().type
-            val right = parseExponent()
+            val right = parseUnary()
             node = ASTNode.BinaryOpNode(op, node, right)
         }
         return node
@@ -57,26 +58,33 @@ class Parser(private val tokens: List<Token>) {
 
     // Right-associative: a^b^c = a^(b^c)
     private fun parseExponent(): ASTNode {
-        val base = parseUnary()
+        val base = parsePostfix()
         if (current().type == TokenType.POWER) {
             advance()
-            val exponent = parseExponent()
+            val exponent = parseUnary()
             return ASTNode.BinaryOpNode(TokenType.POWER, base, exponent)
         }
         return base
     }
 
     private fun parseUnary(): ASTNode {
-        if (current().type == TokenType.MINUS) {
-            advance()
-            val operand = parseUnary()
-            return ASTNode.NegationNode(operand)
+        if (++depth > 128) {
+            depth--
+            throw ParseException("Expression is nested too deeply")
         }
-        if (current().type == TokenType.PLUS) {
-            advance()
-            return parseUnary()
+        try {
+            if (current().type == TokenType.MINUS) {
+                advance()
+                return ASTNode.NegationNode(parseUnary())
+            }
+            if (current().type == TokenType.PLUS) {
+                advance()
+                return parseUnary()
+            }
+            return parseExponent()
+        } finally {
+            depth--
         }
-        return parsePostfix()
     }
 
     private fun parsePostfix(): ASTNode {

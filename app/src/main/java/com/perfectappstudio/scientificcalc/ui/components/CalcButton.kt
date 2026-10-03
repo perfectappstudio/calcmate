@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
@@ -16,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,6 +36,8 @@ import com.perfectappstudio.scientificcalc.ui.theme.PurpleAccent
 import com.perfectappstudio.scientificcalc.ui.theme.PurpleBright
 import com.perfectappstudio.scientificcalc.ui.theme.PurpleShadow
 import com.perfectappstudio.scientificcalc.ui.theme.TextPrimary
+
+val LocalHapticEnabled = staticCompositionLocalOf { true }
 
 enum class CalcButtonVariant {
     Default,
@@ -56,6 +60,7 @@ fun CalcButton(
     textStyle: TextStyle = TextStyle.Default,
 ) {
     val haptic = LocalHapticFeedback.current
+    val hapticEnabled = LocalHapticEnabled.current
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
@@ -96,8 +101,8 @@ fun CalcButton(
         else -> when (effectiveVariant) {
             CalcButtonVariant.Default -> TextPrimary
             CalcButtonVariant.Operator -> PurpleAccent
-            CalcButtonVariant.Equals -> TextPrimary
-            CalcButtonVariant.Clear -> TextPrimary
+            CalcButtonVariant.Equals -> Color(0xFF101B22)
+            CalcButtonVariant.Clear -> Color(0xFF101B22)
             CalcButtonVariant.Scientific -> MintGreen
         }
     }
@@ -108,26 +113,11 @@ fun CalcButton(
         else -> MaterialTheme.typography.bodyLarge
     }
 
-    val shadowModifier = when (effectiveVariant) {
-        CalcButtonVariant.Equals -> Modifier.neoBrutalistShadow(
-            shadowColor = PurpleShadow,
-            offsetX = 3.dp,
-            offsetY = 3.dp,
-        )
-        CalcButtonVariant.Clear -> Modifier.neoBrutalistShadow(
-            shadowColor = PinkShadow,
-            offsetX = 3.dp,
-            offsetY = 3.dp,
-        )
-        else -> Modifier
-    }
-
     Box(
         modifier = modifier
             .defaultMinSize(minWidth = 52.dp, minHeight = 52.dp)
             .graphicsLayer(scaleX = scale, scaleY = scale)
             .semantics { contentDescription = accessibilityLabel }
-            .then(shadowModifier)
             .clip(shape)
             .background(resolvedBg)
             .border(
@@ -140,9 +130,10 @@ fun CalcButton(
             )
             .clickable(
                 interactionSource = interactionSource,
-                indication = null,
+                indication = LocalIndication.current,
+                role = androidx.compose.ui.semantics.Role.Button,
             ) {
-                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                if (hapticEnabled) haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 onClick()
             }
             .padding(horizontal = 6.dp, vertical = 6.dp),

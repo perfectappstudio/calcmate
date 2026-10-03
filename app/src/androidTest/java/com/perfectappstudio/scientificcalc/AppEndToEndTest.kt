@@ -31,7 +31,7 @@ class AppEndToEndTest {
 
     private lateinit var device: UiDevice
 
-    private val packageName = "com.perfectappstudio.scientificcalc"
+    private val packageName = InstrumentationRegistry.getInstrumentation().targetContext.packageName
     private val launchTimeout = 5_000L
     private val uiTimeout = 5_000L
 

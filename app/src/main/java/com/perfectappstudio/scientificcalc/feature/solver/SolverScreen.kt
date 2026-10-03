@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -54,12 +55,13 @@ fun SolverScreen(
             SolverType.QUADRATIC to "Quadratic",
             SolverType.CUBIC to "Cubic",
             SolverType.SYSTEM_2X2 to "System",
-            SolverType.NEWTON to "Solve",
+            SolverType.NEWTON to "Numerical",
         )
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
                 .padding(bottom = 20.dp),
             horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {

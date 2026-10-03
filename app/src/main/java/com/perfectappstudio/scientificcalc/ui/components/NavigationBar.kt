@@ -4,8 +4,9 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.perfectappstudio.scientificcalc.ui.theme.AmberAccent
 import com.perfectappstudio.scientificcalc.ui.theme.CyanAccent
@@ -89,9 +91,11 @@ fun CalcMateNavigationBar(
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .clickable(
+                    .selectable(
+                        selected = isSelected,
+                        role = Role.Tab,
                         interactionSource = interactionSource,
-                        indication = null,
+                        indication = LocalIndication.current,
                     ) { onNavigate(destination.route) }
                     .padding(vertical = 6.dp)
                     .semantics { contentDescription = "${destination.label} tab" },
@@ -105,33 +109,13 @@ fun CalcMateNavigationBar(
                     tint = iconColor,
                 )
 
-                // Selected underline glow
-                if (isSelected) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Box(
-                        modifier = Modifier
-                            .width(24.dp)
-                            .height(2.dp)
-                            .clip(RoundedCornerShape(1.dp))
-                            .background(destination.accentColor),
-                    )
-                } else {
-                    Spacer(modifier = Modifier.height(6.dp))
-                }
-
-                // Show label only when selected
-                AnimatedVisibility(
-                    visible = isSelected,
-                    enter = fadeIn(),
-                    exit = fadeOut(),
-                ) {
-                    Text(
-                        text = destination.label,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = TextPrimary,
-                        modifier = Modifier.padding(top = 2.dp),
-                    )
-                }
+                Text(
+                    text = destination.label,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = if (isSelected) TextPrimary else TextDim,
+                    maxLines = 1,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
             }
         }
     }

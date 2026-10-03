@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
@@ -14,6 +16,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.perfectappstudio.scientificcalc.core.model.Viewport
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -36,6 +43,47 @@ fun GraphScreen(
     viewModel: GraphViewModel = viewModel(),
 ) {
     val state by viewModel.state.collectAsState()
+    var showRanges by rememberSaveable { mutableStateOf(false) }
+    var ranges by rememberSaveable { mutableStateOf(listOf("", "", "", "")) }
+    var rangeError by rememberSaveable { mutableStateOf(false) }
+
+    if (showRanges) {
+        AlertDialog(
+            onDismissRequest = { showRanges = false },
+            title = { Text("Graph range") },
+            text = {
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    listOf("X minimum", "X maximum", "Y minimum", "Y maximum").forEachIndexed { index, label ->
+                        OutlinedTextField(value = ranges[index], onValueChange = { value ->
+                            ranges = ranges.mapIndexed { i, old -> if (i == index) value else old }
+                            rangeError = false
+                        }, label = { Text(label) }, singleLine = true)
+                    }
+                    if (rangeError) Text("Enter finite bounds with each minimum below its maximum.")
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val values = ranges.map { it.toDoubleOrNull() }
+                    if (values.any { it == null || !it.isFinite() }) {
+                        rangeError = true
+                    } else {
+                        val xMin = values[0]!!
+                        val xMax = values[1]!!
+                        val yMin = values[2]!!
+                        val yMax = values[3]!!
+                        if (xMin >= xMax || yMin >= yMax || !(xMax - xMin).isFinite() || !(yMax - yMin).isFinite()) {
+                            rangeError = true
+                        } else {
+                            viewModel.setViewport(Viewport(xMin, xMax, yMin, yMax))
+                            showRanges = false
+                        }
+                    }
+                }) { Text("Apply") }
+            },
+            dismissButton = { TextButton(onClick = { showRanges = false }) { Text("Cancel") } },
+        )
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         // ---- Top app bar ----
@@ -59,7 +107,11 @@ fun GraphScreen(
                         tint = Color.White.copy(alpha = 0.6f),
                     )
                 }
-                IconButton(onClick = { /* settings placeholder */ }) {
+                IconButton(onClick = {
+                    ranges = listOf(state.viewport.xMin, state.viewport.xMax, state.viewport.yMin, state.viewport.yMax).map(Double::toString)
+                    rangeError = false
+                    showRanges = true
+                }) {
                     Icon(
                         imageVector = Icons.Default.Settings,
                         contentDescription = "Settings",

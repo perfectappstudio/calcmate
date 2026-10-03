@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -29,9 +31,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.material3.TextButton
 import com.perfectappstudio.scientificcalc.core.math.ConstantCategory
 import com.perfectappstudio.scientificcalc.core.math.Constants
 import com.perfectappstudio.scientificcalc.core.math.PhysicalConstant
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,6 +46,7 @@ fun ConstantsSheet(
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var searchQuery by remember { mutableStateOf("") }
+    val uriHandler = LocalUriHandler.current
 
     val grouped = remember { Constants.byCategory }
 
@@ -65,6 +71,7 @@ fun ConstantsSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .imePadding()
                 .padding(horizontal = 16.dp),
         ) {
             Text(
@@ -72,6 +79,11 @@ fun ConstantsSheet(
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(bottom = 8.dp),
             )
+            TextButton(onClick = { uriHandler.openUri(Constants.SOURCE_URL) }) {
+                Text(Constants.SOURCE, style = MaterialTheme.typography.bodySmall)
+            }
+            Text("Values are rounded for display; selection uses stored precision.",
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
             OutlinedTextField(
                 value = searchQuery,
@@ -80,6 +92,7 @@ fun ConstantsSheet(
                 placeholder = { Text("Search by name or symbol") },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
                 singleLine = true,
+                keyboardOptions = KeyboardOptions(autoCorrectEnabled = false),
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -137,7 +150,7 @@ private fun ConstantRow(
             Text(
                 text = constant.name,
                 style = MaterialTheme.typography.bodyMedium,
-                maxLines = 1,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
@@ -156,7 +169,7 @@ private fun formatScientific(value: Double): String {
     if (value == 0.0) return "0"
     val abs = kotlin.math.abs(value)
     return if (abs >= 1e4 || abs < 1e-2) {
-        String.format("%.6e", value)
+        String.format(Locale.ROOT, "%.6e", value)
     } else {
         value.toBigDecimal().stripTrailingZeros().toPlainString()
     }

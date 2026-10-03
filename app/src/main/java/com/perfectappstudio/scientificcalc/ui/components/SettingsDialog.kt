@@ -36,33 +36,22 @@ import com.perfectappstudio.scientificcalc.core.model.FractionFormat
 // Option enums
 // ──────────────────────────────────────────────────
 
-enum class ThemeOption(val label: String) {
-    System("System"),
-    Light("Light"),
-    Dark("Dark"),
-}
-
-enum class AngleUnit(val label: String) {
-    Degrees("Degrees"),
-    Radians("Radians"),
-}
-
 // ──────────────────────────────────────────────────
 // Dialog
 // ──────────────────────────────────────────────────
 
 @Composable
 fun SettingsDialog(
-    currentTheme: ThemeOption,
-    onThemeChange: (ThemeOption) -> Unit,
     currentDisplaySettings: DisplaySettings,
     onDisplaySettingsChange: (DisplaySettings) -> Unit,
-    currentAngleUnit: AngleUnit,
-    onAngleUnitChange: (AngleUnit) -> Unit,
+    currentAngleUnit: com.perfectappstudio.scientificcalc.core.model.AngleUnit,
+    onAngleUnitChange: (com.perfectappstudio.scientificcalc.core.model.AngleUnit) -> Unit,
     hapticFeedbackEnabled: Boolean,
     onHapticFeedbackChange: (Boolean) -> Unit,
-    isPremium: Boolean,
-    onRemoveAdsClick: () -> Unit,
+    onPrivacyPolicyClick: () -> Unit,
+    onTermsClick: () -> Unit,
+    privacyOptionsRequired: Boolean,
+    onPrivacyOptionsClick: () -> Unit,
     appVersion: String,
     onDismiss: () -> Unit,
 ) {
@@ -83,17 +72,6 @@ fun SettingsDialog(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                // ── Theme ──
-                SectionHeader("Theme")
-                RadioGroup(
-                    options = ThemeOption.entries,
-                    selected = currentTheme,
-                    labelOf = { it.label },
-                    onSelected = onThemeChange,
-                )
-
-                SectionDivider()
-
                 // ── Display Mode ──
                 SectionHeader("Display Mode")
                 DisplayModeSection(
@@ -137,6 +115,17 @@ fun SettingsDialog(
 
                 // ── Fraction Format ──
                 SectionHeader("Fraction Format")
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text("Show fractions")
+                    Switch(
+                        checked = currentDisplaySettings.showFractions,
+                        onCheckedChange = { onDisplaySettingsChange(currentDisplaySettings.copy(showFractions = it)) },
+                    )
+                }
                 RadioGroup(
                     options = FractionFormat.entries,
                     selected = currentDisplaySettings.fractionFormat,
@@ -152,15 +141,20 @@ fun SettingsDialog(
                         )
                     },
                 )
+                Text(
+                    "S↔D switches between decimals and fractions. ≈ marks a rational approximation; some results remain decimal.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
 
                 SectionDivider()
 
                 // ── Angle unit ──
                 SectionHeader("Angle Unit")
                 RadioGroup(
-                    options = AngleUnit.entries,
+                    options = com.perfectappstudio.scientificcalc.core.model.AngleUnit.entries,
                     selected = currentAngleUnit,
-                    labelOf = { it.label },
+                    labelOf = { it.name.lowercase().replaceFirstChar(Char::uppercase) },
                     onSelected = onAngleUnitChange,
                 )
 
@@ -187,24 +181,11 @@ fun SettingsDialog(
 
                 SectionDivider()
 
-                // ── Remove Ads ──
-                if (!isPremium) {
-                    Button(
-                        onClick = onRemoveAdsClick,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text("Remove Ads - \$2.99")
-                    }
-                    Spacer(modifier = Modifier.height(4.dp))
-                } else {
-                    Text(
-                        text = "Premium -- ad-free experience",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(vertical = 8.dp),
-                    )
+                TextButton(onClick = onPrivacyPolicyClick) { Text("Privacy policy") }
+                TextButton(onClick = onTermsClick) { Text("Terms of use") }
+                if (privacyOptionsRequired) {
+                    TextButton(onClick = onPrivacyOptionsClick) { Text("Ad privacy choices") }
                 }
-
                 SectionDivider()
 
                 // ── About ──

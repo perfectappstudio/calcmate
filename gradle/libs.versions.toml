@@ -1,5 +1,5 @@
 [versions]
-agp = "8.7.3"
+agp = "8.10.1"
 kotlin = "2.1.0"
 ksp = "2.1.0-1.0.29"
 composeBom = "2025.03.00"
@@ -7,8 +7,7 @@ navigation = "2.8.5"
 lifecycle = "2.8.7"
 room = "2.6.1"
 datastore = "1.1.1"
-playServicesAds = "23.6.0"
-billingKtx = "7.1.1"
+playServicesAds = "24.9.0"
 hilt = "2.53.1"
 junit = "4.13.2"
 coroutinesTest = "1.9.0"
@@ -37,7 +36,6 @@ room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 play-services-ads = { group = "com.google.android.gms", name = "play-services-ads", version.ref = "playServicesAds" }
-billing-ktx = { group = "com.android.billingclient", name = "billing-ktx", version.ref = "billingKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutinesTest" }
 compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }

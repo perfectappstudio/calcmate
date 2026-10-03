@@ -14,15 +14,16 @@ val versionProps = Properties().apply {
 
 android {
     namespace = "com.perfectappstudio.scientificcalc"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.perfectappstudio.scientificcalc"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         versionCode = versionProps.getProperty("VERSION_CODE", "1").toInt()
         versionName = versionProps.getProperty("VERSION_NAME", "1.0.0")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders["appDisplayName"] = "CalcMate"
     }
 
     signingConfigs {
@@ -38,10 +39,16 @@ android {
     }
 
     buildTypes {
+        debug {
+            applicationIdSuffix = ".debug"
+            manifestPlaceholders["appDisplayName"] = "CalcMate Preview"
+            manifestPlaceholders["admobAppId"] = "ca-app-pub-4637692872834816~6751156482"
+        }
         release {
+            manifestPlaceholders["admobAppId"] = "ca-app-pub-4637692872834816~6751156482"
             isMinifyEnabled = true
             isShrinkResources = true
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = if (System.getenv("KEYSTORE_FILE") != null) signingConfigs.getByName("release") else null
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -62,6 +69,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -106,9 +114,7 @@ dependencies {
 
     // AdMob
     implementation(libs.play.services.ads)
-
-    // Google Play Billing
-    implementation(libs.billing.ktx)
+    implementation("com.google.android.ump:user-messaging-platform:4.0.0")
 
     // Testing
     testImplementation(libs.junit)

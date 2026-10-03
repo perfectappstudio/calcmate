@@ -1,0 +1,20 @@
+CalcMate (Scientific Calculator) Privacy Policy
+Perfect Apps Studio · 1 October 2026
+
+Calculations and history
+CalcMate processes your expressions on your device. Calculation history and preferences are stored locally. CalcMate does not send your calculation history to Perfect App Studio or an advertising service. Copying or sharing a result happens only when you choose that action; the receiving app handles the shared text under its own policy.
+
+Advertising
+CalcMate uses Google AdMob to display ads. Google's Mobile Ads SDK may collect and share your IP address, advertising or device identifiers, app interactions, and diagnostic information for advertising, analytics, and fraud prevention. Ad requests are gated by Google's User Messaging Platform. Where required, you can change your choices using Settings > Ad privacy choices.
+Google's privacy policy: https://policies.google.com/privacy
+
+Storage, backup, and deletion
+History is retained on your device until you delete entries or clear history. Preferences remain until you clear the app's storage or uninstall it. Android may back up and transfer history and preferences according to your device's backup settings. Manage cloud backups through your Android or Google account settings. Clearing app storage deletes local history and preferences. This does not delete information already processed by Google; use Google's privacy controls for that information.
+
+Accounts and permissions
+CalcMate has no account registration. Network access supports ads and downloaded fonts. Vibration supports optional keypad feedback. CalcMate does not request access to your contacts, camera, microphone, photos, or precise location.
+
+Contact and updates
+Online privacy policy: https://perfectappstudio.com/calcmate/privacy
+Terms of use: https://perfectappstudio.com/calcmate/terms
+For privacy inquiries, email perfectappstudio@gmail.com. This policy will be updated if the app's data practices change.

@@ -6,6 +6,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.google.android.gms.ads.MobileAds
+import com.google.android.ump.ConsentInformation
+import com.google.android.ump.ConsentDebugSettings
+import com.google.android.ump.ConsentRequestParameters
+import com.google.android.ump.UserMessagingPlatform
+import com.perfectappstudio.scientificcalc.BuildConfig
 
 /**
  * Singleton managing ad lifecycle across the app.
@@ -16,8 +22,10 @@ import androidx.compose.runtime.setValue
 object AdManager {
 
     // --------------- Production Ad Unit IDs ---------------
-    const val BANNER_AD_UNIT_ID = "ca-app-pub-4637692872834816/3658089280"
-    const val INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-4637692872834816/7611652484"
+    val BANNER_AD_UNIT_ID = if (BuildConfig.DEBUG) "ca-app-pub-3940256099942544/6300978111"
+        else "ca-app-pub-4637692872834816/3658089280"
+    val INTERSTITIAL_AD_UNIT_ID = if (BuildConfig.DEBUG) "ca-app-pub-3940256099942544/1033173712"
+        else "ca-app-pub-4637692872834816/7611652484"
     const val REWARDED_AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917" // test ID until rewarded unit created
 
     // --------------- Premium state ---------------
@@ -39,10 +47,48 @@ object AdManager {
     /**
      * Call once from [Activity.onCreate] to kick off the first interstitial preload.
      */
-    fun initialize(context: Context) {
-        if (!isPremium) {
-            interstitialHelper.load(context)
-            rewardedHelper.load(context)
+    var canRequestAds by mutableStateOf(false)
+        private set
+    var privacyOptionsRequired by mutableStateOf(false)
+        private set
+    private var sdkInitialized = false
+
+    fun initialize(activity: Activity) {
+        val consent = UserMessagingPlatform.getConsentInformation(activity)
+        val parameters = ConsentRequestParameters.Builder()
+        if (BuildConfig.DEBUG && activity.intent.getStringExtra("consent_debug_region") == "EEA") {
+            parameters.setConsentDebugSettings(ConsentDebugSettings.Builder(activity)
+                .setDebugGeography(ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_EEA).build())
+        }
+        fun updateAdState() {
+            privacyOptionsRequired = consent.privacyOptionsRequirementStatus ==
+                ConsentInformation.PrivacyOptionsRequirementStatus.REQUIRED
+            if (consent.canRequestAds() && !sdkInitialized) {
+                sdkInitialized = true
+                MobileAds.initialize(activity.applicationContext) {
+                    activity.runOnUiThread { canRequestAds = consent.canRequestAds() }
+                }
+            } else if (sdkInitialized) {
+                canRequestAds = consent.canRequestAds()
+            }
+        }
+        consent.requestConsentInfoUpdate(
+            activity,
+            parameters.build(),
+            {
+                UserMessagingPlatform.loadAndShowConsentFormIfRequired(activity) {
+                    updateAdState()
+                }
+            },
+            { updateAdState() },
+        )
+        updateAdState()
+    }
+
+    fun showPrivacyOptions(activity: Activity) {
+        canRequestAds = false
+        UserMessagingPlatform.showPrivacyOptionsForm(activity) {
+            canRequestAds = UserMessagingPlatform.getConsentInformation(activity).canRequestAds()
         }
     }
 
@@ -71,11 +117,11 @@ object AdManager {
     // --------------- Interstitial ---------------
 
     fun loadInterstitial(context: Context) {
-        if (!isPremium) interstitialHelper.load(context)
+        if (!isPremium && canRequestAds) interstitialHelper.load(context)
     }
 
     fun showInterstitial(activity: Activity, onDismissed: () -> Unit) {
-        if (isPremium) {
+        if (isPremium || !canRequestAds) {
             onDismissed()
             return
         }
@@ -91,7 +137,7 @@ object AdManager {
     // --------------- Rewarded ---------------
 
     fun loadRewarded(context: Context) {
-        if (!isPremium) rewardedHelper.load(context)
+        if (!isPremium && canRequestAds) rewardedHelper.load(context)
     }
 
     fun showRewarded(
@@ -101,6 +147,10 @@ object AdManager {
     ) {
         if (isPremium) {
             onRewarded()
+            onDismissed()
+            return
+        }
+        if (!canRequestAds) {
             onDismissed()
             return
         }

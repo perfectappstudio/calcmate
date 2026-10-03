@@ -4,9 +4,9 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.ui.graphics.Color
 
 // Deep Space Background
-val DeepSpaceTop = Color(0xFF1A0A2E)     // Purple-tinted deep
-val DeepSpaceBottom = Color(0xFF0A1A1A)  // Teal-tinted deep
-val DeepSpaceBase = Color(0xFF0F0F14)    // Base background
+val DeepSpaceTop = Color(0xFF14232D)     // Background top
+val DeepSpaceBottom = Color(0xFF101B22)  // Background bottom
+val DeepSpaceBase = Color(0xFF101B22)    // Base background
 
 // Glass Panel Colors
 val GlassLight = Color(0x0FFFFFFF)       // rgba(255,255,255,0.06)
@@ -15,9 +15,9 @@ val GlassBorder = Color(0x1AFFFFFF)      // rgba(255,255,255,0.10)
 val GlassHeavy = Color(0x33FFFFFF)       // rgba(255,255,255,0.20)
 
 // Primary Accents
-val PurpleAccent = Color(0xFFA78BFA)     // Calculator primary
-val PurpleBright = Color(0xFF8B5CF6)     // Equals button solid
-val PurpleShadow = Color(0xFF6D28D9)     // Neo-brutalist shadow
+val PurpleAccent = Color(0xFF8CE4C5)     // Calculator primary
+val PurpleBright = Color(0xFF8CE4C5)     // Equals button solid
+val PurpleShadow = Color(0xFF36866F)     // Neo-brutalist shadow
 
 // Feature Accent Colors
 val MintGreen = Color(0xFF6EE7B7)        // Graph
@@ -30,25 +30,29 @@ val LimeGreen = Color(0xFF22C55E)        // Base-N
 val OrangeAccent = Color(0xFFFB923C)     // Matrix
 
 // Text
-val TextPrimary = Color(0xFFFFFFFF)      // Pure white - never gray
-val TextSecondary = Color(0x99FFFFFF)    // 60% white
-val TextDim = Color(0x4DFFFFFF)          // 30% white
+val TextPrimary = Color(0xFFF2F6F7)      // Pure white - never gray
+val TextSecondary = Color(0xFFB5C3CC)    // 60% white
+val TextDim = Color(0xFF94A7B4)          // 30% white
 
 val DarkColorScheme = darkColorScheme(
     primary = PurpleAccent,
-    onPrimary = TextPrimary,
+    onPrimary = DeepSpaceBase,
+    primaryContainer = Color(0xFF234C40),
+    onPrimaryContainer = MintGreen,
     secondary = MintGreen,
     onSecondary = DeepSpaceBase,
+    secondaryContainer = Color(0xFF234C40),
+    onSecondaryContainer = MintGreen,
     tertiary = PinkAccent,
     onTertiary = TextPrimary,
     background = DeepSpaceBase,
     onBackground = TextPrimary,
-    surface = GlassLight,
+    surface = Color(0xFF1C2B35),
     onSurface = TextPrimary,
-    surfaceVariant = GlassMedium,
+    surfaceVariant = Color(0xFF283A46),
     onSurfaceVariant = TextSecondary,
-    surfaceContainer = GlassLight,
-    surfaceContainerHigh = GlassMedium,
+    surfaceContainer = Color(0xFF1C2B35),
+    surfaceContainerHigh = Color(0xFF283A46),
     error = PinkAccent,
     onError = TextPrimary,
 )

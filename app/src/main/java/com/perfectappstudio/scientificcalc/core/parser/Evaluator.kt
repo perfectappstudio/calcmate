@@ -4,7 +4,11 @@ import com.perfectappstudio.scientificcalc.core.math.Combinatorics
 import com.perfectappstudio.scientificcalc.core.model.AngleUnit
 import kotlin.math.*
 
-class Evaluator(private val angleUnit: AngleUnit = AngleUnit.RADIAN) {
+class Evaluator(
+    private val angleUnit: AngleUnit = AngleUnit.RADIAN,
+    private val variables: Map<Char, CalcResult> = emptyMap(),
+    private val answer: CalcResult? = null,
+) {
 
     fun evaluate(node: ASTNode): CalcResult = when (node) {
         is ASTNode.NumberNode -> CalcResult.RealResult(node.value)
@@ -46,7 +50,10 @@ class Evaluator(private val angleUnit: AngleUnit = AngleUnit.RADIAN) {
         return when (node.func) {
             TokenType.SIN -> sin(toRadians(arg))
             TokenType.COS -> cos(toRadians(arg))
-            TokenType.TAN -> tan(toRadians(arg))
+            TokenType.TAN -> {
+                val radians = toRadians(arg)
+                if (abs(cos(radians)) < 1e-15) Double.NaN else tan(radians)
+            }
 
             TokenType.ASIN -> fromRadians(asin(arg))
             TokenType.ACOS -> fromRadians(acos(arg))
@@ -79,7 +86,8 @@ class Evaluator(private val angleUnit: AngleUnit = AngleUnit.RADIAN) {
     private fun evaluatePermComb(node: ASTNode.PermCombNode): Double {
         val n = evaluate(node.n).toDouble()
         val r = evaluate(node.r).toDouble()
-        if (n != floor(n) || r != floor(r) || n < 0 || r < 0) return Double.NaN
+        if (!n.isFinite() || !r.isFinite() || n != floor(n) || r != floor(r) ||
+            n < 0 || r < 0 || n > 9_007_199_254_740_991.0 || r > 9_007_199_254_740_991.0) return Double.NaN
         return when (node.type) {
             TokenType.NPR -> Combinatorics.nPr(n.toLong(), r.toLong())
             TokenType.NCR -> Combinatorics.nCr(n.toLong(), r.toLong())
@@ -94,11 +102,11 @@ class Evaluator(private val angleUnit: AngleUnit = AngleUnit.RADIAN) {
     }
 
     private fun evaluateVariable(node: ASTNode.VariableNode): CalcResult {
-        return com.perfectappstudio.scientificcalc.core.model.MemoryManager.recallVariable(node.name)
+        return variables[node.name] ?: com.perfectappstudio.scientificcalc.core.model.MemoryManager.recallVariable(node.name)
     }
 
     private fun evaluateAns(): CalcResult {
-        return com.perfectappstudio.scientificcalc.core.model.MemoryManager.ans
+        return answer ?: com.perfectappstudio.scientificcalc.core.model.MemoryManager.ans
     }
 
     private fun toRadians(value: Double): Double = when (angleUnit) {

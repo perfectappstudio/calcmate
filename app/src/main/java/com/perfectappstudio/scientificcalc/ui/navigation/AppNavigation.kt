@@ -10,7 +10,18 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.Text
+import androidx.activity.compose.BackHandler
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.perfectappstudio.scientificcalc.feature.calculator.CalculatorViewModel
+import com.perfectappstudio.scientificcalc.feature.calculus.CalculusScreen
+import com.perfectappstudio.scientificcalc.feature.matrix.MatrixScreen
+import com.perfectappstudio.scientificcalc.feature.vector.VectorScreen
+import com.perfectappstudio.scientificcalc.feature.basen.BaseNScreen
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,6 +45,8 @@ private fun routeIndex(route: String): Int =
 @Composable
 fun AppNavigation() {
     var currentRoute by rememberSaveable { mutableStateOf("calculator") }
+    val calculator: CalculatorViewModel = viewModel()
+    BackHandler(enabled = currentRoute != "calculator") { currentRoute = "calculator" }
 
     Column(
         modifier = Modifier
@@ -43,6 +56,12 @@ fun AppNavigation() {
         Scaffold(
             modifier = Modifier.weight(1f),
             containerColor = DeepSpaceBase.copy(alpha = 0f), // transparent so gradient shows through
+            contentColor = MaterialTheme.colorScheme.onBackground,
+            topBar = {
+                if (currentRoute in listOf("matrix", "vector", "basen", "calculus")) {
+                    TextButton(onClick = { currentRoute = "calculator" }, modifier = Modifier.statusBarsPadding()) { Text("Back to calculator") }
+                }
+            },
             bottomBar = {
                 Column {
                     BannerAdComposable()
@@ -76,11 +95,18 @@ fun AppNavigation() {
                 },
             ) { route ->
                 when (route) {
-                    "calculator" -> CalculatorScreen()
+                    "calculator" -> CalculatorScreen(viewModel = calculator, onOpenTool = { currentRoute = it })
                     "graph" -> GraphScreen()
                     "solver" -> SolverScreen()
                     "converter" -> ConverterScreen()
                     "statistics" -> StatisticsScreen()
+                    "matrix" -> MatrixScreen()
+                    "vector" -> VectorScreen()
+                    "basen" -> BaseNScreen()
+                    "calculus" -> CalculusScreen(onUseResult = {
+                        calculator.useToolResult(it)
+                        currentRoute = "calculator"
+                    })
                 }
             }
         }

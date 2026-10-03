@@ -15,6 +15,7 @@ sealed interface CalculatorAction {
     data object Backspace : CalculatorAction
     data object ToggleSign : CalculatorAction
     data object ToggleDisplayFormat : CalculatorAction
+    data object ToggleFractionDisplay : CalculatorAction
     data object ToggleAngleUnit : CalculatorAction
     data object ToggleScientific : CalculatorAction
     data object ToggleInverse : CalculatorAction

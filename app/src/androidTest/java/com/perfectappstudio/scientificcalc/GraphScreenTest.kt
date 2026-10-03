@@ -5,6 +5,8 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextReplacement
+import androidx.compose.ui.test.assertTextContains
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Before
 import org.junit.Rule
@@ -55,6 +57,21 @@ class GraphScreenTest {
     fun settingsButton_isVisible() {
         // The settings icon button has contentDescription "Settings"
         composeRule.onNodeWithContentDescription("Settings").assertExists()
+    }
+
+    @Test
+    fun graphRangeRejectsInvalidBoundsAndSavesValidBounds() {
+        composeRule.onNodeWithContentDescription("Settings").performClick()
+        composeRule.onNodeWithText("X minimum").performTextReplacement("1")
+        composeRule.onNodeWithText("X maximum").performTextReplacement("1")
+        composeRule.onNodeWithText("Apply").performClick()
+        composeRule.onNodeWithText("Enter finite bounds with each minimum below its maximum.").assertExists()
+        composeRule.onNodeWithText("X maximum").performTextReplacement("5")
+        composeRule.onNodeWithText("Apply").performClick()
+        composeRule.onNodeWithText("Graph range").assertDoesNotExist()
+        composeRule.onNodeWithContentDescription("Settings").performClick()
+        composeRule.onNodeWithText("X minimum").assertTextContains("1.0")
+        composeRule.onNodeWithText("X maximum").assertTextContains("5.0")
     }
 
     @Test

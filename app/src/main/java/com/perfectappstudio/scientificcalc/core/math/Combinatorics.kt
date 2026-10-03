@@ -14,9 +14,11 @@ object Combinatorics {
 
     fun nPr(n: Long, r: Long): Double {
         if (n < 0 || r < 0 || r > n) return Double.NaN
+        if (r == 0L) return 1.0
         var result = 1.0
         for (i in (n - r + 1)..n) {
             result *= i
+            if (!result.isFinite()) return Double.POSITIVE_INFINITY
         }
         return result
     }
@@ -26,7 +28,8 @@ object Combinatorics {
         val rEffective = minOf(r, n - r)
         var result = 1.0
         for (i in 0 until rEffective) {
-            result = result * (n - i) / (i + 1)
+            result *= (n - i).toDouble() / (i + 1).toDouble()
+            if (!result.isFinite()) return Double.POSITIVE_INFINITY
         }
         return result
     }
