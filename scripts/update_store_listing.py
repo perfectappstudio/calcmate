@@ -13,6 +13,7 @@ ASSETS = Path(__file__).resolve().parents[1] / "store-assets"
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--apply", action="store_true")
+    parser.add_argument("--production-version", type=int)
     args = parser.parse_args()
     title_line, short_line, full_description = (ASSETS / "listing-en-US.txt").read_text().split("\n", 2)
     title = title_line.removeprefix("Title: ").strip()
@@ -39,6 +40,29 @@ def main() -> None:
     service = build("androidpublisher", "v3", credentials=credentials, cache_discovery=False)
     edits = service.edits()
     edit_id = edits.insert(packageName=PACKAGE_NAME, body={}).execute()["id"]
+    production_release = None
+    if args.production_version is not None:
+        properties = dict(line.split("=", 1) for line in (ASSETS.parent / "version.properties").read_text().splitlines())
+        if args.production_version != int(properties["VERSION_CODE"]):
+            raise ValueError("Production version must match the verified source version")
+        internal = edits.tracks().get(packageName=PACKAGE_NAME, editId=edit_id, track="internal").execute()
+        internal_codes = {int(code) for release in internal.get("releases", []) for code in release.get("versionCodes", [])}
+        if args.production_version not in internal_codes:
+            raise ValueError("Requested production version is not available in internal testing")
+        production = edits.tracks().get(packageName=PACKAGE_NAME, editId=edit_id, track="production").execute()
+        print(json.dumps({"currentProduction": production, "requestedVersion": args.production_version}, indent=2))
+        releases = production.get("releases", [])
+        if len(releases) != 1 or releases[0].get("status") != "completed":
+            raise ValueError("An unexpected production release is active; inspect Play Console")
+        old_codes = [int(code) for code in releases[0].get("versionCodes", [])]
+        if str(args.production_version) not in releases[0].get("versionCodes", []):
+            if not old_codes or args.production_version <= max(old_codes):
+                raise ValueError("Requested version is not newer than production")
+            production_release = {
+                "name": properties["VERSION_NAME"], "status": "completed",
+                "versionCodes": [str(code) for code in old_codes if code != max(old_codes)] + [str(args.production_version)],
+                "releaseNotes": [{"language": "en-US", "text": "Numerical calculus, searchable constants, decimal/fraction results, examples and help, graph range settings, clearer layouts, calculation fixes, and advertising privacy controls."}],
+            }
     listings = edits.listings().list(packageName=PACKAGE_NAME, editId=edit_id).execute().get("listings", [])
     if not any(item["language"] == "en-US" for item in listings):
         raise ValueError("The existing English listing was not found")
@@ -64,8 +88,12 @@ def main() -> None:
             images.upload(packageName=PACKAGE_NAME, editId=edit_id, language="en-US", imageType=image_type,
                           media_body=MediaFileUpload(str(path), mimetype="image/png")).execute()
     edits.validate(packageName=PACKAGE_NAME, editId=edit_id).execute()
+    if production_release is not None:
+        edits.tracks().update(packageName=PACKAGE_NAME, editId=edit_id, track="production",
+                              body={"track": "production", "releases": [production_release]}).execute()
+        edits.validate(packageName=PACKAGE_NAME, editId=edit_id).execute()
     edits.commit(packageName=PACKAGE_NAME, editId=edit_id).execute()
-    print("Store assets submitted to Google Play's automatic review.")
+    print("Requested release and store assets submitted to Google Play's automatic review.")
 
 
 if __name__ == "__main__":
